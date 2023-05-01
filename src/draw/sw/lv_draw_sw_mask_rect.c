@@ -55,13 +55,6 @@ void lv_draw_sw_mask_rect(lv_draw_unit_t * draw_unit, const lv_draw_mask_rect_ds
     uint32_t area_w = lv_area_get_width(&draw_area);
     lv_opa_t * mask_buf = lv_malloc(area_w);
 
-    //    uint32_t i;
-    //    lv_color32_t * c32_buf = draw_unit->target_layer->buf;
-    //    for(i = 0; i < lv_area_get_size(&dsc->area); i++) {
-    //        c32_buf[i].alpha = 0x80;
-    //    }
-    //    return;
-
     lv_coord_t y;
     for(y = draw_area.y1; y <= draw_area.y2; y++) {
         lv_memset(mask_buf, 0xff, area_w);
@@ -87,6 +80,9 @@ void lv_draw_sw_mask_rect(lv_draw_unit_t * draw_unit, const lv_draw_mask_rect_ds
             }
         }
     }
+
+    lv_free(mask_buf);
+    lv_draw_sw_mask_free_param(&param);
 }
 
 /**********************

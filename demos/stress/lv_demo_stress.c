@@ -97,8 +97,8 @@ static void obj_test_task_cb(lv_timer_t * tmr)
                 lv_obj_t * t = lv_tabview_add_tab(obj, "First");
 
                 t = lv_tabview_add_tab(obj, "Second");
-                lv_obj_t * c = lv_colorwheel_create(t, true);
-                lv_obj_set_size(c,  150, 150);
+                //                lv_obj_t * c = lv_colorwheel_create(t, true);
+                //                lv_obj_set_size(c,  150, 150);
                 //                  c = lv_led_create(t, NULL);
                 //                  lv_obj_set_pos(c, 160, 20);
                 t = lv_tabview_add_tab(obj, LV_SYMBOL_EDIT " Edit");
@@ -179,6 +179,7 @@ static void obj_test_task_cb(lv_timer_t * tmr)
             obj = lv_switch_create(main_page);
             lv_obj_add_state(obj, LV_STATE_CHECKED);
             auto_del(obj, 730);
+
             break;
 
         case 8:
