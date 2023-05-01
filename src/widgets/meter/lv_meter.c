@@ -512,7 +512,7 @@ static void draw_needles(lv_obj_t * obj, lv_layer_t * layer, const lv_area_t * s
             line_dsc.width = indic->type_data.needle_line.width;
             line_dsc.opa = indic->opa > LV_OPA_MAX ? opa_main : (opa_main * indic->opa) >> 8;
             line_dsc.p1 = scale_center;
-            line_dsc.p1 = p_end;
+            line_dsc.p2 = p_end;
             lv_draw_line(layer, &line_dsc);
         }
         else if(indic->type == LV_METER_INDICATOR_TYPE_NEEDLE_IMG) {

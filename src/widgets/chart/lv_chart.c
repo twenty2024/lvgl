@@ -1410,6 +1410,7 @@ static void draw_x_ticks(lv_obj_t * obj, lv_layer_t * layer, lv_chart_axis_t axi
     lv_draw_label_dsc_t label_dsc;
     lv_draw_label_dsc_init(&label_dsc);
     lv_obj_init_draw_label_dsc(obj, LV_PART_TICKS, &label_dsc);
+    label_dsc.base.id1 = axis;
 
     lv_coord_t x_ofs = obj->coords.x1 + pad_left - lv_obj_get_scroll_left(obj);
     lv_coord_t y_ofs;
@@ -1433,6 +1434,7 @@ static void draw_x_ticks(lv_obj_t * obj, lv_layer_t * layer, lv_chart_axis_t axi
     lv_obj_init_draw_line_dsc(obj, LV_PART_TICKS, &line_dsc);
     line_dsc.dash_gap = 0;
     line_dsc.dash_width = 0;
+    line_dsc.base.id1 = axis;
 
     uint8_t sec_axis = axis == LV_CHART_AXIS_PRIMARY_X ? 0 : 1;
 
@@ -1474,6 +1476,7 @@ static void draw_x_ticks(lv_obj_t * obj, lv_layer_t * layer, lv_chart_axis_t axi
             tick_value = i / t->minor_cnt;
         }
 
+        line_dsc.base.id2 = i;
         if(major && t->label_en) {
             char buf[LV_CHART_LABEL_MAX_TEXT_LENGTH];
             lv_snprintf(buf, sizeof(buf), "%" LV_PRId32, tick_value);
@@ -1499,6 +1502,7 @@ static void draw_x_ticks(lv_obj_t * obj, lv_layer_t * layer, lv_chart_axis_t axi
 
             if(a.x2 >= obj->coords.x1 &&
                a.x1 <= obj->coords.x2) {
+                label_dsc.base.id2 = i;
                 lv_draw_label(layer, &label_dsc, &a);
             }
         }
