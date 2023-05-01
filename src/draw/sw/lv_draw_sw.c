@@ -310,6 +310,9 @@ static void exectue_drawing(lv_draw_sw_unit_t * u)
         case LV_DRAW_TASK_TYPE_LINE:
             lv_draw_sw_line((lv_draw_unit_t *)u, t->draw_dsc);
             break;
+        case LV_DRAW_TASK_TYPE_TRIANLGE:
+            lv_draw_sw_triangle((lv_draw_unit_t *)u, t->draw_dsc);
+            break;
         case LV_DRAW_TASK_TYPE_LAYER:
             lv_draw_sw_layer((lv_draw_unit_t *)u, t->draw_dsc, &t->area);
             break;

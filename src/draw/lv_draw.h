@@ -37,6 +37,7 @@ typedef enum {
     LV_DRAW_TASK_TYPE_LAYER,
     LV_DRAW_TASK_TYPE_LINE,
     LV_DRAW_TASK_TYPE_ARC,
+    LV_DRAW_TASK_TYPE_TRIANLGE,
     LV_DRAW_TASK_TYPE_MASK_RECTANGLE,
     LV_DRAW_TASK_TYPE_MASK_BITMAP,
 } lv_draw_task_type_t;
@@ -213,6 +214,7 @@ lv_layer_t * lv_draw_layer_create(lv_layer_t * parent_layer, lv_color_format_t c
 #include "lv_draw_img.h"
 #include "lv_draw_arc.h"
 #include "lv_draw_line.h"
+#include "lv_draw_triangle.h"
 #include "lv_draw_mask.h"
 
 #ifdef __cplusplus

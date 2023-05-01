@@ -46,7 +46,7 @@ LV_ATTRIBUTE_FAST_MEM static void shadow_blur_corner(lv_coord_t size, lv_coord_t
 #endif
 
 void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_area, const lv_area_t * inner_area,
-                         lv_coord_t rout, lv_coord_t rin, lv_color_t color, lv_opa_t opa, lv_blend_mode_t blend_mode);
+                         lv_coord_t rout, lv_coord_t rin, lv_color_t color, lv_opa_t opa);
 
 static void draw_border_simple(lv_draw_unit_t * draw_unit, const lv_area_t * outer_area, const lv_area_t * inner_area,
                                lv_color_t color, lv_opa_t opa);
@@ -112,10 +112,8 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
 
     lv_grad_dir_t grad_dir = dsc->bg_grad.dir;
     lv_color_t bg_color    = grad_dir == LV_GRAD_DIR_NONE ? dsc->bg_color : dsc->bg_grad.stops[0].color;
-    if(lv_color_eq(bg_color, dsc->bg_grad.stops[1].color)) grad_dir = LV_GRAD_DIR_NONE;
 
     lv_draw_sw_blend_dsc_t blend_dsc = {0};
-    blend_dsc.blend_mode = dsc->blend_mode;
     blend_dsc.color = bg_color;
 
     /*Most simple case: just a plain rectangle*/
@@ -164,7 +162,7 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
     /*Get gradient if appropriate*/
     lv_grad_t * grad = lv_gradient_get(&dsc->bg_grad, coords_bg_w, coords_bg_h);
     if(grad && grad_dir == LV_GRAD_DIR_HOR) {
-        blend_dsc.src_buf = grad->map + clipped_coords.x1 - bg_coords.x1;
+        blend_dsc.src_buf = grad->color_map + clipped_coords.x1 - bg_coords.x1;
     }
 
 #if _DITHER_GRADIENT
@@ -173,7 +171,7 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
     lv_coord_t grad_size = coords_bg_w;
     if(grad_dir == LV_GRAD_DIR_VER && dither_mode != LV_DITHER_NONE) {
         /* When dithering, we are still using a map that's changing from line to line*/
-        blend_dsc.src_buf = grad->map;
+        blend_dsc.src_buf = grad->color_map;
     }
 
     if(grad && dither_mode == LV_DITHER_NONE) {
@@ -230,7 +228,10 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
 #if _DITHER_GRADIENT
             if(dither_func) dither_func(grad, blend_area.x1,  top_y - bg_coords.y1, grad_size);
 #endif
-            if(grad_dir == LV_GRAD_DIR_VER) blend_dsc.color = grad->map[top_y - bg_coords.y1];
+            if(grad_dir == LV_GRAD_DIR_VER) {
+                blend_dsc.color = grad->color_map[top_y - bg_coords.y1];
+                blend_dsc.opa = grad->opa_map[top_y - bg_coords.y1];
+            }
             lv_draw_sw_blend(draw_unit, &blend_dsc);
         }
 
@@ -241,7 +242,7 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
 #if _DITHER_GRADIENT
             if(dither_func) dither_func(grad, blend_area.x1,  bottom_y - bg_coords.y1, grad_size);
 #endif
-            if(grad_dir == LV_GRAD_DIR_VER) blend_dsc.color = grad->map[bottom_y - bg_coords.y1];
+            if(grad_dir == LV_GRAD_DIR_VER) blend_dsc.color = grad->color_map[bottom_y - bg_coords.y1];
             lv_draw_sw_blend(draw_unit, &blend_dsc);
         }
     }
@@ -273,7 +274,10 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
 #if _DITHER_GRADIENT
             if(dither_func) dither_func(grad, blend_area.x1,  h - bg_coords.y1, grad_size);
 #endif
-            if(grad_dir == LV_GRAD_DIR_VER) blend_dsc.color = grad->map[h - bg_coords.y1];
+            if(grad_dir == LV_GRAD_DIR_VER) {
+                blend_dsc.color = grad->color_map[h - bg_coords.y1];
+                blend_dsc.opa = grad->opa_map[h - bg_coords.y1];
+            }
             lv_draw_sw_blend(draw_unit, &blend_dsc);
         }
     }
@@ -328,7 +332,6 @@ static void draw_bg_img(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * d
         if(res == LV_RES_OK) {
             lv_draw_img_dsc_t img_dsc;
             lv_draw_img_dsc_init(&img_dsc);
-            img_dsc.blend_mode = dsc->blend_mode;
             img_dsc.recolor = dsc->bg_img_recolor;
             img_dsc.recolor_opa = dsc->bg_img_recolor_opa;
             img_dsc.opa = dsc->bg_img_opa;
@@ -391,7 +394,7 @@ static void draw_border(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * d
     lv_coord_t rin = rout - dsc->border_width;
     if(rin < 0) rin = 0;
 
-    draw_border_generic(draw_unit, coords, &area_inner, rout, rin, dsc->border_color, dsc->border_opa, dsc->blend_mode);
+    draw_border_generic(draw_unit, coords, &area_inner, rout, rin, dsc->border_color, dsc->border_opa);
 
 }
 
@@ -476,7 +479,7 @@ LV_ATTRIBUTE_FAST_MEM static void draw_shadow(lv_draw_unit_t * draw_unit, const 
 
     /*Skip a lot of masking if the background will cover the shadow that would be masked out*/
     bool simple = true;
-    if(dsc->bg_opa < LV_OPA_COVER || dsc->blend_mode != LV_BLEND_MODE_NORMAL) simple = false;
+    if(dsc->bg_opa < LV_OPA_COVER) simple = false;
 
     /*Create a radius mask to clip remove shadow on the bg area*/
 
@@ -501,7 +504,6 @@ LV_ATTRIBUTE_FAST_MEM static void draw_shadow(lv_draw_unit_t * draw_unit, const 
     blend_dsc.mask_buf = mask_buf;
     blend_dsc.color = dsc->shadow_color;
     blend_dsc.opa = dsc->shadow_opa;
-    blend_dsc.blend_mode = dsc->blend_mode;
 
     lv_coord_t w_half = shadow_area.x1 + lv_area_get_width(&shadow_area) / 2;
     lv_coord_t h_half = shadow_area.y1 + lv_area_get_height(&shadow_area) / 2;
@@ -1113,12 +1115,11 @@ static void draw_outline(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * 
 
     lv_coord_t rout = rin + dsc->outline_width;
 
-    draw_border_generic(draw_unit, &area_outer, &area_inner, rout, rin, dsc->outline_color, dsc->outline_opa,
-                        dsc->blend_mode);
+    draw_border_generic(draw_unit, &area_outer, &area_inner, rout, rin, dsc->outline_color, dsc->outline_opa);
 }
 
 void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_area, const lv_area_t * inner_area,
-                         lv_coord_t rout, lv_coord_t rin, lv_color_t color, lv_opa_t opa, lv_blend_mode_t blend_mode)
+                         lv_coord_t rout, lv_coord_t rin, lv_color_t color, lv_opa_t opa)
 {
     opa = opa >= LV_OPA_COVER ? LV_OPA_COVER : opa;
 
@@ -1160,7 +1161,6 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
     blend_dsc.mask_area = &blend_area;
     blend_dsc.color = color;
     blend_dsc.opa = opa;
-    blend_dsc.blend_mode = blend_mode;
 
     /*Calculate the x and y coordinates where the straight parts area*/
     lv_area_t core_area;
@@ -1310,8 +1310,6 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
     if(rout > 0) lv_draw_sw_mask_free_param(&mask_rout_param);
     lv_free(blend_dsc.mask_buf);
 
-#else /*LV_USE_DRAW_MASKS*/
-    LV_UNUSED(blend_mode);
 #endif /*LV_USE_DRAW_MASKS*/
 }
 static void draw_border_simple(lv_draw_unit_t * draw_unit, const lv_area_t * outer_area, const lv_area_t * inner_area,

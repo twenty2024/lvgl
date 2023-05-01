@@ -46,8 +46,9 @@ typedef struct _lv_gradient_cache_t {
                                    * less likely to be evicted from the cache */
     uint32_t        filled : 1;   /**< Used to skip dithering in it if already done */
     uint32_t        not_cached: 1; /**< The cache was too small so this item is not managed by the cache*/
-    lv_color_t   *  map;          /**< The computed gradient low bitdepth color map, points into the
+    lv_color_t   *  color_map;          /**< The computed gradient low bitdepth color map, points into the
                                    * cache's buffer, no free needed */
+    lv_opa_t   *  opa_map;
     lv_coord_t      alloc_size;   /**< The map allocated size in colors */
     lv_coord_t      size;         /**< The computed gradient color map size, in colors */
 #if _DITHER_GRADIENT
@@ -71,8 +72,9 @@ typedef struct _lv_gradient_cache_t {
  * @param range     The range to use in computation.
  * @param frac      The current part used in the range. frac is in [0; range]
  */
-LV_ATTRIBUTE_FAST_MEM lv_grad_color_t lv_gradient_calculate(const lv_grad_dsc_t * dsc, lv_coord_t range,
-                                                            lv_coord_t frac);
+
+LV_ATTRIBUTE_FAST_MEM void lv_gradient_color_calculate(const lv_grad_dsc_t * dsc, lv_coord_t range,
+                                                       lv_coord_t frac, lv_grad_color_t * color_out, lv_opa_t * opa_out);
 
 /**
  * Set the gradient cache size

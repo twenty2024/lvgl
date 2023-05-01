@@ -56,7 +56,6 @@ void lv_draw_sw_arc(lv_draw_unit_t * draw_unit, const lv_draw_arc_dsc_t * dsc, c
 
     lv_draw_rect_dsc_t cir_dsc;
     lv_draw_rect_dsc_init(&cir_dsc);
-    cir_dsc.blend_mode = dsc->blend_mode;
     if(dsc->img_src) {
         cir_dsc.bg_opa = LV_OPA_TRANSP;
         cir_dsc.bg_img_src = dsc->img_src;

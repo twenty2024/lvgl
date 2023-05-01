@@ -54,7 +54,6 @@ void lv_obj_init_draw_rect_dsc(lv_obj_t * obj, uint32_t part, lv_draw_rect_dsc_t
         }
     }
 
-    if(part != LV_PART_MAIN) draw_dsc->blend_mode = lv_obj_get_style_blend_mode(obj, part);
 #if LV_USE_DRAW_MASKS
 
     draw_dsc->radius = lv_obj_get_style_radius(obj, part);

@@ -33,7 +33,6 @@ typedef struct {
     lv_draw_dsc_base_t base;
 
     lv_coord_t radius;
-    lv_blend_mode_t blend_mode;
 
     /*Background*/
     lv_opa_t bg_opa;
