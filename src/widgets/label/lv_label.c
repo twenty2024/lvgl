@@ -780,7 +780,9 @@ static void draw_main(lv_event_t * e)
 
     lv_area_t txt_clip;
     bool is_common = _lv_area_intersect(&txt_clip, &txt_coords, &layer->clip_area);
-    if(!is_common) return;
+    if(!is_common) {
+        return;
+    }
 
     if(label->long_mode == LV_LABEL_LONG_WRAP) {
         lv_coord_t s = lv_obj_get_scroll_top(obj);

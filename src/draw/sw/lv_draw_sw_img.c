@@ -49,6 +49,11 @@ static void convert_cb(const lv_area_t * dest_area, const void * src_buf, lv_coo
 void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw_dsc, const lv_area_t * coords)
 {
     lv_layer_t * layer_to_draw = (lv_layer_t *)draw_dsc->src;
+
+    /*It can happen that nothing was draw on a layer and therefore its buffer is not allocated.
+     *In this case just return. */
+    if(layer_to_draw->buf == NULL) return;
+
     lv_img_dsc_t img_dsc;
     img_dsc.header.w = lv_area_get_width(&layer_to_draw->buf_area);
     img_dsc.header.h = lv_area_get_height(&layer_to_draw->buf_area);
