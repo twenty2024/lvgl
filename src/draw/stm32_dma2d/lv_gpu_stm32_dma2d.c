@@ -139,7 +139,10 @@ void lv_draw_stm32_dma2d_blend(lv_layer_t * layer, const lv_draw_sw_blend_dsc_t 
         }
     }
 
-    if(!done) lv_draw_sw_blend_basic(layer, dsc);
+    if(!done) {
+        lv_draw_sw_blend_basic(draw_ctx, dsc);
+        invalidate_cache();
+    }
 }
 
 void lv_draw_stm32_dma2d_buffer_copy(lv_layer_t * layer,

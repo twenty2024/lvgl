@@ -132,7 +132,7 @@ static void card_create(lv_obj_t * parent, const void * avatart_src, const char 
     lv_obj_add_event(cont, scroll_event_cb, LV_EVENT_RELEASED, NULL);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
-    //    lv_obj_set_style_opa(cont, 200, 0);
+    //        lv_obj_set_style_opa(cont, 200, 0);
 
     lv_obj_t * remove = lv_obj_create(cont);
     lv_obj_add_style(remove, &style_remove, 0);
