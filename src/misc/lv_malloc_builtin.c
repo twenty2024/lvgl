@@ -216,8 +216,14 @@ void lv_free_builtin(void * p)
 
 lv_res_t lv_mem_test_builtin(void)
 {
+#if LV_USE_OS
+    lv_mutex_lock(&mutex);
+#endif
     if(lv_tlsf_check(tlsf)) {
         LV_LOG_WARN("failed");
+#if LV_USE_OS
+        lv_mutex_unlock(&mutex);
+#endif
         return LV_RES_INV;
     }
 
@@ -225,11 +231,17 @@ lv_res_t lv_mem_test_builtin(void)
     _LV_LL_READ(&pool_ll, pool_p) {
         if(lv_tlsf_check_pool(*pool_p)) {
             LV_LOG_WARN("pool failed");
+#if LV_USE_OS
+            lv_mutex_unlock(&mutex);
+#endif
             return LV_RES_INV;
         }
     }
 
     MEM_TRACE("passed");
+#if LV_USE_OS
+    lv_mutex_unlock(&mutex);
+#endif
     return LV_RES_OK;
 }
 
