@@ -173,9 +173,6 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
     draw_unit->clip_area = &draw_area;
 
     bool transformed = draw_dsc->angle != 0 || draw_dsc->zoom != LV_ZOOM_NONE ? true : false;
-    bool masked = (draw_dsc->bitmap_mask && _lv_area_is_on(&draw_dsc->bitmap_mask_area, &transformed_area)) ||
-                  _lv_area_is_on(&draw_dsc->rectangle_mask_area, &transformed_area);
-
 
     lv_draw_sw_blend_dsc_t blend_dsc;
 
@@ -184,7 +181,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
     blend_dsc.blend_mode = draw_dsc->blend_mode;
 
     /*The simplest case just copy the pixels into the draw_buf*/
-    if(!masked && !transformed && cf == LV_COLOR_FORMAT_NATIVE && draw_dsc->recolor_opa == LV_OPA_TRANSP) {
+    if(!transformed && cf == LV_COLOR_FORMAT_NATIVE && draw_dsc->recolor_opa == LV_OPA_TRANSP) {
         blend_dsc.src_buf = (const lv_color_t *)src_buf;
         blend_dsc.blend_area = coords;
         lv_draw_sw_blend(draw_unit, &blend_dsc);
@@ -202,7 +199,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
         blend_dsc.blend_area = coords;
         lv_draw_sw_blend(draw_unit, &blend_dsc);
     }
-    else if(!masked && !transformed && cf == LV_COLOR_FORMAT_RGB565A8 && draw_dsc->recolor_opa == LV_OPA_TRANSP) {
+    else if(!transformed && cf == LV_COLOR_FORMAT_RGB565A8 && draw_dsc->recolor_opa == LV_OPA_TRANSP) {
         lv_coord_t src_w = lv_area_get_width(coords);
         lv_coord_t src_h = lv_area_get_height(coords);
         blend_dsc.src_buf = (const lv_color_t *)src_buf;

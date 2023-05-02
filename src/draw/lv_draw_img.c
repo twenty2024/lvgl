@@ -50,11 +50,6 @@ void lv_draw_img_dsc_init(lv_draw_img_dsc_t * dsc)
     dsc->opa = LV_OPA_COVER;
     dsc->zoom = LV_ZOOM_NONE;
     dsc->antialias = LV_COLOR_DEPTH > 8 ? 1 : 0;
-
-    dsc->rectangle_mask_area.x1 = LV_COORD_MIN;
-    dsc->rectangle_mask_area.y1 = LV_COORD_MIN;
-    dsc->rectangle_mask_area.x2 = LV_COORD_MAX;
-    dsc->rectangle_mask_area.y2 = LV_COORD_MAX;
 }
 
 
