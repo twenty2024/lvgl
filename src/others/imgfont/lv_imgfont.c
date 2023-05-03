@@ -21,7 +21,6 @@ typedef struct {
     lv_font_t * font;
     lv_imgfont_get_path_cb_t path_cb;
     void * user_data;
-    char path[LV_IMGFONT_PATH_MAX_LEN];
 } imgfont_dsc_t;
 
 /**********************
@@ -89,8 +88,11 @@ static const uint8_t * imgfont_get_glyph_bitmap(const lv_font_t * font, uint32_t
 {
     LV_UNUSED(unicode);
     LV_ASSERT_NULL(font);
+
     imgfont_dsc_t * dsc = (imgfont_dsc_t *)font->dsc;
-    return (uint8_t *)dsc->path;
+    lv_coord_t offset_y = 0;
+    const void * img_src = dsc->path_cb(dsc->font, unicode, 0, &offset_y, dsc->user_data);
+    return img_src;
 }
 
 static bool imgfont_get_glyph_dsc(const lv_font_t * font, lv_font_glyph_dsc_t * dsc_out,
@@ -104,9 +106,8 @@ static bool imgfont_get_glyph_dsc(const lv_font_t * font, lv_font_glyph_dsc_t * 
 
     lv_coord_t offset_y = 0;
 
-    if(!dsc->path_cb(dsc->font, dsc->path, LV_IMGFONT_PATH_MAX_LEN, unicode, unicode_next, &offset_y, dsc->user_data)) {
-        return false;
-    }
+    const void * img_src = dsc->path_cb(dsc->font, unicode, unicode_next, &offset_y, dsc->user_data);
+    if(img_src == NULL) return false;
 
     const lv_img_header_t * img_header;
 #if LV_IMGFONT_USE_IMG_CACHE_HEADER
@@ -121,7 +122,7 @@ static bool imgfont_get_glyph_dsc(const lv_font_t * font, lv_font_glyph_dsc_t * 
 #else
     lv_img_header_t header;
 
-    if(lv_img_decoder_get_info(dsc->path, &header) != LV_RES_OK) {
+    if(lv_img_decoder_get_info(img_src, &header) != LV_RES_OK) {
         return false;
     }
 
