@@ -27,6 +27,7 @@ typedef struct {
 /**********************
  *  STATIC PROTOTYPES
  **********************/
+static void inactive_timer_cb(lv_timer_t * t);
 static void card_create(lv_obj_t * parent, card_info_t * info);
 
 /**********************
@@ -37,8 +38,10 @@ static lv_style_t style_placeholder;
 static lv_style_t style_card;
 static lv_style_t style_avatar;
 static lv_style_t style_btn;
-static lv_style_t style_remove;
+static lv_style_t style_hide;
 
+extern lv_font_t font_multilang_small;
+extern lv_font_t font_multilang_large;
 
 /**********************
  *      MACROS
@@ -110,9 +113,9 @@ static card_info_t card_info[] = {
  *   GLOBAL FUNCTIONS
  **********************/
 
-static bool get_imgfont_path(const lv_font_t * font, void * img_src,
-                             uint16_t len, uint32_t unicode, uint32_t unicode_next,
-                             lv_coord_t * offset_y, void * user_data)
+static const void * get_imgfont_path(const lv_font_t * font,
+                                     uint32_t unicode, uint32_t unicode_next,
+                                     lv_coord_t * offset_y, void * user_data)
 {
     LV_IMG_DECLARE(img_emoji_artist_palette);
     LV_IMG_DECLARE(img_emoji_books);
@@ -128,60 +131,43 @@ static bool get_imgfont_path(const lv_font_t * font, void * img_src,
     LV_IMG_DECLARE(img_emoji_woman_in_lotus_position);
     LV_IMG_DECLARE(img_emoji_rocket);
 
+    *offset_y = -1;
     switch(unicode) {
         case 0x1F30D:
-            lv_memcpy(img_src, &img_emoji_earth_globe_europe_africa, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_earth_globe_europe_africa;;
         case 0x1F431:
-            lv_memcpy(img_src, &img_emoji_cat_face, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_cat_face;
         case 0x1F4AA:
-            lv_memcpy(img_src, &img_emoji_flexed_biceps, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_flexed_biceps;
         case 0x2764:
-            lv_memcpy(img_src, &img_emoji_red_heart, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_red_heart;
         case 0x1F333:
-            lv_memcpy(img_src, &img_emoji_deciduous_tree, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_deciduous_tree;
         case 0x1F3A5:
-            lv_memcpy(img_src, &img_emoji_movie_camera, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_movie_camera;
         case 0x26BD:
-            lv_memcpy(img_src, &img_emoji_soccer_ball, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_soccer_ball;
         case 0x1F436:
-            lv_memcpy(img_src, &img_emoji_dog_face, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_dog_face;
         case 0x1F4DA:
-            lv_memcpy(img_src, &img_emoji_books, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_books;
         case 0x1F4F8:
-            lv_memcpy(img_src, &img_emoji_camera_with_flash, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_camera_with_flash;
         case 0x1F9D8:
-            lv_memcpy(img_src, &img_emoji_woman_in_lotus_position, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_woman_in_lotus_position;
         case 0x1F3A8:
-            lv_memcpy(img_src, &img_emoji_artist_palette, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_artist_palette;
         case 0x1F680:
-            lv_memcpy(img_src, &img_emoji_rocket, sizeof(lv_img_dsc_t));
-            break;
+            return &img_emoji_rocket;
         default:
-            return false;
+            return NULL;
     }
-
-    *offset_y = -1;
-
-    return true;
 }
 
 lv_font_t * emoji_font;
 
 void lv_demo_multilang(void)
 {
-    extern lv_font_t font_multilang_small;
     emoji_font = lv_imgfont_create(20, get_imgfont_path, NULL);
     font_multilang_small.fallback = emoji_font;
 
@@ -218,13 +204,15 @@ void lv_demo_multilang(void)
     lv_style_set_radius(&style_card, 12);
     lv_style_set_base_dir(&style_card, LV_BASE_DIR_AUTO);
 
-    lv_style_init(&style_remove);
-    lv_style_set_width(&style_remove, lv_pct(100));
-    lv_style_set_height(&style_remove, lv_pct(100));
-    lv_style_set_bg_color(&style_remove, lv_color_hex(0x759efe));
-    lv_style_set_bg_grad_color(&style_remove, lv_color_hex(0x4173ff));
-    lv_style_set_bg_grad_dir(&style_remove, LV_GRAD_DIR_HOR);
-    lv_style_set_radius(&style_remove, 12);
+    lv_style_init(&style_hide);
+    lv_style_set_width(&style_hide, lv_pct(100));
+    lv_style_set_height(&style_hide, lv_pct(100));
+    lv_style_set_bg_color(&style_hide, lv_color_hex(0x759efe));
+    lv_style_set_bg_grad_color(&style_hide, lv_color_hex(0x4173ff));
+    lv_style_set_bg_grad_dir(&style_hide, LV_GRAD_DIR_HOR);
+    lv_style_set_radius(&style_hide, 12);
+    lv_style_set_text_font(&style_hide, &font_multilang_large);
+    lv_style_set_text_color(&style_hide, lv_color_hex(0xffffff));
 
     lv_style_init(&style_placeholder);
     lv_style_set_width(&style_placeholder, lv_pct(100));
@@ -251,11 +239,36 @@ void lv_demo_multilang(void)
     for(i = 0; card_info[i].image; i++) {
         card_create(lv_scr_act(), &card_info[i]);
     }
+
+    lv_timer_create(inactive_timer_cb, 1000, NULL);
 }
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+static void inactive_timer_cb(lv_timer_t * t)
+{
+
+    static bool scrolled = false;
+    lv_obj_t * cont = lv_obj_get_child(lv_scr_act(), 0);
+    if(cont == NULL) return;
+
+    if(scrolled) {
+        lv_obj_scroll_by(cont, -100, 0, LV_ANIM_ON);
+        lv_obj_clear_flag(lv_layer_top(), LV_OBJ_FLAG_CLICKABLE);
+        scrolled = false;
+        return;
+    }
+
+    if(lv_disp_get_inactive_time(NULL) > 8000) {
+        lv_disp_trig_activity(NULL);
+        lv_obj_scroll_by(cont, 100, 0, LV_ANIM_ON);
+        lv_obj_add_flag(lv_layer_top(), LV_OBJ_FLAG_CLICKABLE);
+        scrolled = true;
+    }
+
+}
 
 static void shrink_anim_cb(void * var, int32_t v)
 {
@@ -300,10 +313,14 @@ static void card_create(lv_obj_t * parent, card_info_t * info)
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
 
     lv_obj_t * remove = lv_obj_create(cont);
-    lv_obj_add_style(remove, &style_remove, 0);
+    lv_obj_add_style(remove, &style_hide, 0);
     lv_obj_clear_flag(remove, LV_OBJ_FLAG_SNAPPABLE);
     lv_obj_add_flag(remove, LV_OBJ_FLAG_FLOATING);
     lv_obj_clear_flag(remove, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t * hide_label = lv_label_create(remove);
+    lv_label_set_text(hide_label, "Hide");
+    lv_obj_align(hide_label, LV_ALIGN_LEFT_MID, 10, 0);
 
     lv_obj_t * placeholder = lv_obj_create(cont);
     lv_obj_add_style(placeholder, &style_placeholder, 0);
@@ -317,7 +334,6 @@ static void card_create(lv_obj_t * parent, card_info_t * info)
     lv_obj_set_grid_cell(avatar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 4);
     lv_obj_add_style(avatar, &style_avatar, 0);
 
-    LV_FONT_DECLARE(font_multilang_large);
     lv_obj_t * name = lv_label_create(card);
     lv_label_set_text(name, info->name);
     lv_obj_set_grid_cell(name, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
@@ -333,7 +349,6 @@ static void card_create(lv_obj_t * parent, card_info_t * info)
     lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
     lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_CENTER, 3, 1);
     lv_obj_add_style(btn, &style_btn, 0);
-    //    lv_obj_set_style_translate_y(btn, -4, 0);
 
     lv_obj_t * btn_label = lv_label_create(btn);
     lv_label_set_text(btn_label, "Add Friend");
