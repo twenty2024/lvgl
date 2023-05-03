@@ -357,7 +357,7 @@ static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc, 
         if(letter >= 0x20 &&
            letter != 0xf8ff && /*LV_SYMBOL_DUMMY*/
            letter != 0x200c) { /*ZERO WIDTH NON-JOINER*/
-            LV_LOG_INFO("lv_draw_letter: glyph dsc. not found for U+%" LV_PRIX32, letter);
+            LV_LOG_WARN("lv_draw_letter: glyph dsc. not found for U+%" LV_PRIX32, letter);
         }
         return;
     }
@@ -377,6 +377,8 @@ static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc, 
     uint8_t buf_out[100 * 100];
     dsc->bitmap = lv_font_get_glyph_bitmap(g.resolved_font, letter, buf_out);
     dsc->letter_coords = &letter_coords;
+    if(g.bpp == LV_IMGFONT_BPP) dsc->format = LV_DRAW_LETTER_BITMAP_FORMAT_IMAGE;
+    else dsc->format = LV_DRAW_LETTER_BITMAP_FORMAT_A8;
 
     cb(draw_unit, dsc);
 }

@@ -101,18 +101,13 @@ LV_ATTRIBUTE_FAST_MEM static void draw_letter(lv_draw_unit_t * draw_unit, lv_dra
 
 #if LV_USE_IMGFONT
     if(draw_dsc->format == LV_DRAW_LETTER_BITMAP_FORMAT_IMAGE) {
-        lv_area_t fill_area;
-        fill_area.x1 = pos->x;
-        fill_area.y1 = pos->y;
-        fill_area.x2 = pos->x + g->box_w - 1;
-        fill_area.y2 = pos->y + g->box_h - 1;
         lv_draw_img_dsc_t img_dsc;
         lv_draw_img_dsc_init(&img_dsc);
         img_dsc.angle = 0;
         img_dsc.zoom = LV_ZOOM_NONE;
-        img_dsc.opa = dsc->opa;
-        img_dsc.blend_mode = dsc->blend_mode;
-        lv_draw_img(layer, &img_dsc, &fill_area, map_p);
+        img_dsc.opa = draw_dsc->letter_opa;
+        img_dsc.src = draw_dsc->bitmap;
+        lv_draw_sw_img(draw_unit, &img_dsc, draw_dsc->letter_coords);
         return;
     }
 #endif

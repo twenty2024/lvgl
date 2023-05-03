@@ -101,7 +101,7 @@ const uint8_t * lv_font_get_bitmap_fmt_txt(const lv_font_t * font, uint32_t unic
         }
         /*If gsize was even*/
         if(i == gsize - 1) {
-            bitmap_out[i - 1] = opa4_table[(*bitmap_in) & 0xF];
+            bitmap_out[gsize - 1] = opa4_table[(*bitmap_in) & 0xF];
         }
         return bitmap_out;
     }

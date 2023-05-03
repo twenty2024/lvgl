@@ -249,7 +249,7 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
 
     /* Draw the center of the rectangle.*/
 
-    /*Ifno gradient, the center is a simple rectangle*/
+    /*If no gradient, the center is a simple rectangle*/
     lv_area_t center_coords;
     center_coords.x1 = bg_coords.x1;
     center_coords.x2 = bg_coords.x2;

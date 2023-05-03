@@ -116,6 +116,10 @@ LV_ATTRIBUTE_FAST_MEM lv_draw_sw_mask_res_t lv_draw_sw_mask_apply(void * list[],
  */
 void lv_draw_sw_mask_free_param(void * p)
 {
+
+#if LV_USE_OS
+    lv_mutex_lock(&circle_cache_mutex);
+#endif
     _lv_draw_sw_mask_common_dsc_t * pdsc = p;
     if(pdsc->type == LV_DRAW_SW_MASK_TYPE_RADIUS) {
         lv_draw_sw_mask_radius_param_t * radius_p = (lv_draw_sw_mask_radius_param_t *) p;
@@ -133,6 +137,10 @@ void lv_draw_sw_mask_free_param(void * p)
         lv_draw_sw_mask_polygon_param_t * poly_p = (lv_draw_sw_mask_polygon_param_t *) p;
         lv_free(poly_p->cfg.points);
     }
+
+#if LV_USE_OS
+    lv_mutex_unlock(&circle_cache_mutex);
+#endif
 }
 
 void _lv_draw_sw_mask_cleanup(void)
