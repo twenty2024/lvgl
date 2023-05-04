@@ -710,8 +710,8 @@ static void draw_main(lv_event_t * e)
                 obj->skip_trans = 0;
             }
 
-            rect_dsc_act.base.id2 = row;
-            rect_dsc_act.base.id1 = col;
+            rect_dsc_act.base.id1 = row;
+            rect_dsc_act.base.id2 = col;
             label_dsc_act.base.id1 = row;
             label_dsc_act.base.id2 = col;
 

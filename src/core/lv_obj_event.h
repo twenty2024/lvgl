@@ -185,6 +185,14 @@ const lv_area_t * lv_event_get_cover_area(lv_event_t * e);
  */
 void lv_event_set_cover_res(lv_event_t * e, lv_cover_res_t res);
 
+/**
+ * Get the draw task which was just added.
+ * Can be used in `LV_EVENT_DRAW_TASK_ADDED event`
+ * @param e     pointer to an event
+ * @return      the added draw task
+ */
+lv_draw_task_t * lv_event_get_draw_task(lv_event_t * e);
+
 /**********************
  *      MACROS
  **********************/

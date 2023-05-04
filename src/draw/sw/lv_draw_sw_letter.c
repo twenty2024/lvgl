@@ -55,6 +55,8 @@ static void draw_letter_subpx(lv_layer_t * layer, const lv_draw_label_dsc_t * ds
 
 void lv_draw_sw_label(lv_draw_unit_t * draw_unit, const lv_draw_label_dsc_t * dsc, const lv_area_t * coords)
 {
+    if(dsc->opa <= LV_OPA_MIN) return;
+
     lv_draw_label_interate_letters(draw_unit, dsc, coords, draw_letter);
 }
 
@@ -84,7 +86,7 @@ LV_ATTRIBUTE_FAST_MEM static void draw_letter(lv_draw_unit_t * draw_unit, lv_dra
         lv_draw_sw_blend_dsc_t blend_dsc;
         lv_memzero(&blend_dsc, sizeof(blend_dsc));
         blend_dsc.color = draw_dsc->letter_color;
-        blend_dsc.opa = LV_OPA_COVER;
+        blend_dsc.opa = draw_dsc->letter_opa;
         blend_dsc.blend_mode = draw_dsc->blend_mode;
         blend_dsc.mask_buf = draw_dsc->bitmap;
         blend_dsc.mask_area = draw_dsc->letter_coords;

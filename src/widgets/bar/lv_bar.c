@@ -462,7 +462,7 @@ static void draw_indic(lv_event_t * e)
     lv_area_t indic_clip_area;
     if(_lv_area_intersect(&indic_clip_area, &indic_area, &layer->clip_area)) {
         lv_layer_t * layer_indic = lv_draw_layer_create(layer, LV_COLOR_FORMAT_ARGB8888, &indic_area);
-        layer_indic->clip_area = indic_clip_area;
+        //        layer_indic->clip_area = indic_clip_area;
 
         lv_draw_rect(layer_indic, &draw_rect_dsc, &mask_indic_max_area);
         draw_rect_dsc.border_opa = border_opa;

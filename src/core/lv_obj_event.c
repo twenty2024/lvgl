@@ -269,6 +269,18 @@ void lv_event_set_cover_res(lv_event_t * e, lv_cover_res_t res)
     }
 }
 
+lv_draw_task_t * lv_event_get_draw_task(lv_event_t * e)
+{
+    if(e->code == LV_EVENT_DRAW_TASK_ADDED) {
+        return lv_event_get_param(e);
+    }
+    else {
+        LV_LOG_WARN("Not interpreted with this event code");
+        return NULL;
+    }
+
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
