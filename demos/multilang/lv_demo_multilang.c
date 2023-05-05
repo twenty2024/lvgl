@@ -1,6 +1,6 @@
 /**
  * @file lv_demo_multilang.c
- *
+ * Recommended resolution 470x640
  */
 
 /*********************
@@ -350,12 +350,16 @@ static void card_create(lv_obj_t * parent, card_info_t * info)
     lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_CENTER, 3, 1);
     lv_obj_add_style(btn, &style_btn, 0);
 
+    LV_IMG_DECLARE(img_multilang_like);
+    lv_obj_t * btn_img = lv_img_create(btn);
+    lv_img_set_src(btn_img, &img_multilang_like);
+    lv_obj_align(btn_img, LV_ALIGN_LEFT_MID, 30, 0);
+
     lv_obj_t * btn_label = lv_label_create(btn);
-    lv_label_set_text(btn_label, "Add Friend");
-    lv_obj_center(btn_label);
+    lv_label_set_text(btn_label, "Like");
+    lv_obj_align(btn_label, LV_ALIGN_LEFT_MID, 60, 1);
 
     lv_obj_scroll_to_view(card, LV_ANIM_OFF);
 }
-
 
 #endif
