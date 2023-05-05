@@ -50,7 +50,6 @@ enum {
     LV_DRAW_SW_MASK_TYPE_RADIUS,
     LV_DRAW_SW_MASK_TYPE_FADE,
     LV_DRAW_SW_MASK_TYPE_MAP,
-    LV_DRAW_SW_MASK_TYPE_POLYGON,
 };
 
 typedef uint8_t lv_draw_sw_mask_type_t;
@@ -182,16 +181,6 @@ typedef struct _lv_draw_sw_mask_map_param_t {
     } cfg;
 } lv_draw_sw_mask_map_param_t;
 
-typedef struct {
-    /*The first element must be the common descriptor*/
-    _lv_draw_sw_mask_common_dsc_t dsc;
-
-    struct {
-        lv_point_t * points;
-        uint16_t point_cnt;
-    } cfg;
-} lv_draw_sw_mask_polygon_param_t;
-
 
 /**********************
  * GLOBAL PROTOTYPES
@@ -302,9 +291,6 @@ void lv_draw_sw_mask_fade_init(lv_draw_sw_mask_fade_param_t * param, const lv_ar
  * @param map array of bytes with the mask values
  */
 void lv_draw_sw_mask_map_init(lv_draw_sw_mask_map_param_t * param, const lv_area_t * coords, const lv_opa_t * map);
-
-void lv_draw_sw_mask_polygon_init(lv_draw_sw_mask_polygon_param_t * param, const lv_point_t * points,
-                                  uint16_t point_cnt);
 
 #endif /*LV_USE_DRAW_MASKS*/
 

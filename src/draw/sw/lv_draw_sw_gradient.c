@@ -11,6 +11,8 @@
 
 #include "../../misc/lv_gc.h"
 #include "../../misc/lv_types.h"
+#include "../../osal/lv_os.h"
+
 
 /*********************
  *      DEFINES
@@ -55,7 +57,9 @@ static  uint32_t compute_key(const lv_grad_dsc_t * g, lv_coord_t w, lv_coord_t h
  **********************/
 static size_t    grad_cache_size = 0;
 static uint8_t * grad_cache_end = 0;
-
+#if LV_USE_OS
+    static lv_mutex_t grad_cache_mutex;
+#endif
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -260,16 +264,25 @@ lv_grad_t * lv_gradient_get(const lv_grad_dsc_t * g, lv_coord_t w, lv_coord_t h)
     /* Step 0: Check if the cache exist (else create it) */
     static bool inited = false;
     if(!inited) {
+#if LV_USE_OS
+        lv_mutex_init(&grad_cache_mutex);
+#endif
         lv_gradient_set_cache_size(LV_DRAW_SW_GRADIENT_CACHE_DEF_SIZE);
         inited = true;
     }
 
+#if LV_USE_OS
+    lv_mutex_lock(&grad_cache_mutex);
+#endif
     /* Step 1: Search cache for the given key */
     lv_coord_t size = g->dir == LV_GRAD_DIR_HOR ? w : h;
     uint32_t key = compute_key(g, size, w);
     lv_grad_t * item = NULL;
     if(iterate_cache(&find_item, &key, &item) == LV_RES_OK) {
         item->life++; /* Don't forget to bump the counter */
+#if LV_USE_OS
+        lv_mutex_unlock(&grad_cache_mutex);
+#endif
         return item;
     }
 
@@ -277,6 +290,9 @@ lv_grad_t * lv_gradient_get(const lv_grad_dsc_t * g, lv_coord_t w, lv_coord_t h)
     item = allocate_item(g, w, h);
     if(item == NULL) {
         LV_LOG_WARN("Faild to allcoate item for teh gradient");
+#if LV_USE_OS
+        lv_mutex_unlock(&grad_cache_mutex);
+#endif
         return item;
     }
 
@@ -293,7 +309,9 @@ lv_grad_t * lv_gradient_get(const lv_grad_dsc_t * g, lv_coord_t w, lv_coord_t h)
         lv_gradient_color_calculate(g, item->size, i, &item->color_map[i], &item->opa_map[i]);
     }
 #endif
-
+#if LV_USE_OS
+    lv_mutex_unlock(&grad_cache_mutex);
+#endif
     return item;
 }
 

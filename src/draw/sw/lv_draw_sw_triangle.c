@@ -49,7 +49,6 @@ void lv_draw_sw_triangle(lv_draw_unit_t * draw_unit, const lv_draw_triangle_dsc_
     tri_area.y2 = LV_MAX3(dsc->p[0].y, dsc->p[1].y, dsc->p[2].y);
 
     bool is_common;
-    lv_area_t clip_area;
     lv_area_t draw_area;
     is_common = _lv_area_intersect(&draw_area, &tri_area, draw_unit->clip_area);
     if(!is_common) return;
@@ -142,7 +141,7 @@ void lv_draw_sw_triangle(lv_draw_unit_t * draw_unit, const lv_draw_triangle_dsc_
         blend_dsc.src_buf = grad->color_map + draw_area.x1 - tri_area.x1;
     }
 
-    uint32_t y;
+    int32_t y;
     for(y = draw_area.y1; y <= draw_area.y2; y++) {
         blend_area.y1 = y;
         blend_area.y2 = y;
@@ -153,6 +152,15 @@ void lv_draw_sw_triangle(lv_draw_unit_t * draw_unit, const lv_draw_triangle_dsc_
             blend_dsc.opa = grad->opa_map[y - tri_area.y1];
         }
         lv_draw_sw_blend(draw_unit, &blend_dsc);
+    }
+
+    lv_free(mask_buf);
+    lv_draw_sw_mask_free_param(&mask_bottom);
+    lv_draw_sw_mask_free_param(&mask_left);
+    lv_draw_sw_mask_free_param(&mask_right);
+
+    if(grad) {
+        lv_gradient_cleanup(grad);
     }
 
 #else

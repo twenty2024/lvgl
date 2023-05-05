@@ -246,6 +246,7 @@ LV_ATTRIBUTE_FAST_MEM static void draw_line_ver(lv_draw_unit_t * draw_unit, cons
 
 LV_ATTRIBUTE_FAST_MEM static void draw_line_skew(lv_draw_unit_t * draw_unit, const lv_draw_line_dsc_t * dsc)
 {
+
 #if LV_USE_DRAW_MASKS
     /*Keep the great y in p1*/
     lv_point_t p1;
@@ -395,8 +396,10 @@ LV_ATTRIBUTE_FAST_MEM static void draw_line_skew(lv_draw_unit_t * draw_unit, con
 
     lv_draw_sw_mask_free_param(&mask_left_param);
     lv_draw_sw_mask_free_param(&mask_right_param);
-    lv_draw_sw_mask_free_param(&mask_top_param);
-    lv_draw_sw_mask_free_param(&mask_bottom_param);
+    if(!dsc->raw_end) {
+        lv_draw_sw_mask_free_param(&mask_top_param);
+        lv_draw_sw_mask_free_param(&mask_bottom_param);
+    }
 #else
     LV_UNUSED(draw_unit);
     LV_UNUSED(dsc);
