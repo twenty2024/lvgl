@@ -709,8 +709,7 @@ static void draw_main(lv_event_t * e)
     lv_coord_t pright = lv_obj_get_style_pad_right(obj, LV_PART_MAIN);
 
 #if LV_USE_ARABIC_PERSIAN_CHARS
-    const size_t txt_ap_size = 256 ;
-    char txt_ap[txt_ap_size];
+    char txt_ap[256];
 #endif
 
     for(btn_i = 0; btn_i < btnm->btn_cnt; btn_i++, txt_i++) {
@@ -792,7 +791,7 @@ static void draw_main(lv_event_t * e)
 #if LV_USE_ARABIC_PERSIAN_CHARS
         /*Get the size of the Arabic text and process it*/
         size_t len_ap = _lv_txt_ap_calc_bytes_cnt(txt);
-        if(len_ap < txt_ap_size) {
+        if(len_ap < sizeof(txt_ap)) {
             _lv_txt_ap_proc(txt, txt_ap);
             txt = txt_ap;
         }

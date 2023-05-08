@@ -43,16 +43,6 @@ static void lv_draw_sw_buffer_clear(lv_layer_t * layer);
 /**********************
  *  GLOBAL PROTOTYPES
  **********************/
-LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw_dsc,
-                                          const lv_area_t * coords);
-
-void lv_draw_sw_rect(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, const lv_area_t * coords);
-
-void lv_draw_sw_label(lv_draw_unit_t * draw_unit, const lv_draw_label_dsc_t * dsc, const lv_area_t * coords);
-
-void lv_draw_sw_arc(lv_draw_unit_t * draw_unit, const lv_draw_arc_dsc_t * dsc, const lv_area_t * coords);
-
-void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw_dsc, const lv_area_t * coords);
 
 /**********************
  *  STATIC VARIABLES
@@ -66,7 +56,7 @@ void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_layer_t * lv_draw_sw_init_ctx(lv_disp_t * disp)
+lv_layer_t * lv_draw_sw_layer_init(lv_disp_t * disp)
 {
     lv_layer_t * layer = lv_malloc(sizeof(lv_layer_t));
     LV_ASSERT_MALLOC(layer);
@@ -88,7 +78,7 @@ lv_layer_t * lv_draw_sw_init_ctx(lv_disp_t * disp)
     return layer;
 }
 
-void lv_draw_sw_deinit_ctx(lv_disp_t * disp, lv_layer_t * layer)
+void lv_draw_sw_layer_deinit(lv_disp_t * disp, lv_layer_t * layer)
 {
     LV_UNUSED(disp);
     lv_memzero(layer, sizeof(lv_layer_t));
@@ -196,6 +186,8 @@ static void lv_draw_sw_buffer_copy(lv_layer_t * layer,
 
 static void lv_draw_sw_buffer_convert(lv_layer_t * layer)
 {
+    LV_UNUSED(layer);
+    //TODO
     //    /*Keep the rendered image as it is*/
     //    if(layer->color_format == LV_COLOR_FORMAT_NATIVE) return;
     //

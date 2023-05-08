@@ -140,10 +140,11 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv
         if(dsc->src_buf == NULL) {
             lv_color32_t color32 = lv_color_to_xrgb8888(dsc->color);
             color32.alpha = dsc->opa;
-            fill_argb8888(dest_buf, &blend_area, dest_stride, color32, mask, mask_stride);
+            fill_argb8888((lv_color32_t *)dest_buf, &blend_area, dest_stride, color32, mask, mask_stride);
         }
         else {
-            map_to_argb8888(dest_buf, &blend_area, dest_stride, src_buf, src_stride, dsc->opa, mask, mask_stride, dsc->blend_mode);
+            map_to_argb8888((lv_color32_t *)dest_buf, &blend_area, dest_stride, src_buf, src_stride, dsc->opa, mask, mask_stride,
+                            dsc->blend_mode);
         }
     }
     else {

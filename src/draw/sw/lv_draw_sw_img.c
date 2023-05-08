@@ -143,7 +143,7 @@ void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw
 LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw_dsc,
                                           const lv_area_t * coords)
 {
-    lv_img_dsc_t * img_dsc = draw_dsc->src;
+    const lv_img_dsc_t * img_dsc = draw_dsc->src;
     const uint8_t * src_buf = img_dsc->data;
 
     lv_color_format_t cf = img_dsc->header.cf;

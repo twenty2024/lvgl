@@ -250,11 +250,6 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
     /* Draw the center of the rectangle.*/
 
     /*If no gradient, the center is a simple rectangle*/
-    lv_area_t center_coords;
-    center_coords.x1 = bg_coords.x1;
-    center_coords.x2 = bg_coords.x2;
-    center_coords.y1 = bg_coords.y1 + rout;
-    center_coords.y2 = bg_coords.y2 - rout;
     if(grad_dir == LV_GRAD_DIR_NONE) {
         blend_area.y1 = bg_coords.y1 + rout;
         blend_area.y2 = bg_coords.y2 - rout;
@@ -282,8 +277,6 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
         }
     }
 
-
-bg_clean_up:
     if(mask_buf) {
         lv_free(mask_buf);
         lv_draw_sw_mask_free_param(&mask_rout_param);
@@ -345,7 +338,7 @@ static void draw_bg_img(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * d
                 area.x2 = area.x1 + header.w - 1;
                 area.y2 = area.y1 + header.h - 1;
 
-                lv_draw_img(draw_unit, &img_dsc, &area);
+                lv_draw_sw_img(draw_unit, &img_dsc, &area);
             }
             else {
                 lv_area_t area;
@@ -357,7 +350,7 @@ static void draw_bg_img(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * d
                     area.x1 = coords->x1;
                     area.x2 = area.x1 + header.w - 1;
                     for(; area.x1 <= coords->x2; area.x1 += header.w, area.x2 += header.w) {
-                        lv_draw_img(draw_unit, &img_dsc, &area);
+                        lv_draw_sw_img(draw_unit, &img_dsc, &area);
                     }
                 }
             }
@@ -1137,7 +1130,8 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
 
     lv_draw_sw_blend_dsc_t blend_dsc;
     lv_memzero(&blend_dsc, sizeof(blend_dsc));
-    blend_dsc.mask_buf = lv_malloc(draw_area_w);;
+    lv_opa_t * mask_buf = lv_malloc(draw_area_w);
+    blend_dsc.mask_buf = mask_buf;
 
 
     void * mask_list[3] = {0};
@@ -1231,8 +1225,8 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
             lv_coord_t bottom_y = outer_area->y2 - h;
             if(top_y < draw_area.y1 && bottom_y > draw_area.y2) continue;   /*This line is clipped now*/
 
-            lv_memset(blend_dsc.mask_buf, 0xff, draw_area_w);
-            blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, blend_dsc.mask_buf, blend_area.x1, top_y, draw_area_w);
+            lv_memset(mask_buf, 0xff, draw_area_w);
+            blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, mask_buf, blend_area.x1, top_y, draw_area_w);
 
             if(top_y >= draw_area.y1) {
                 blend_area.y1 = top_y;
@@ -1258,8 +1252,8 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
                     blend_area.y1 = h;
                     blend_area.y2 = h;
 
-                    lv_memset(blend_dsc.mask_buf, 0xff, blend_w);
-                    blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, blend_dsc.mask_buf, blend_area.x1, h, blend_w);
+                    lv_memset(mask_buf, 0xff, blend_w);
+                    blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, mask_buf, blend_area.x1, h, blend_w);
                     lv_draw_sw_blend(draw_unit, &blend_dsc);
                 }
             }
@@ -1269,8 +1263,8 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
                     blend_area.y1 = h;
                     blend_area.y2 = h;
 
-                    lv_memset(blend_dsc.mask_buf, 0xff, blend_w);
-                    blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, blend_dsc.mask_buf, blend_area.x1, h, blend_w);
+                    lv_memset(mask_buf, 0xff, blend_w);
+                    blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, mask_buf, blend_area.x1, h, blend_w);
                     lv_draw_sw_blend(draw_unit, &blend_dsc);
                 }
             }
@@ -1287,8 +1281,8 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
                     blend_area.y1 = h;
                     blend_area.y2 = h;
 
-                    lv_memset(blend_dsc.mask_buf, 0xff, blend_w);
-                    blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, blend_dsc.mask_buf, blend_area.x1, h, blend_w);
+                    lv_memset(mask_buf, 0xff, blend_w);
+                    blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, mask_buf, blend_area.x1, h, blend_w);
                     lv_draw_sw_blend(draw_unit, &blend_dsc);
                 }
             }
@@ -1298,8 +1292,8 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
                     blend_area.y1 = h;
                     blend_area.y2 = h;
 
-                    lv_memset(blend_dsc.mask_buf, 0xff, blend_w);
-                    blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, blend_dsc.mask_buf, blend_area.x1, h, blend_w);
+                    lv_memset(mask_buf, 0xff, blend_w);
+                    blend_dsc.mask_res = lv_draw_sw_mask_apply(mask_list, mask_buf, blend_area.x1, h, blend_w);
                     lv_draw_sw_blend(draw_unit, &blend_dsc);
                 }
             }
@@ -1308,7 +1302,7 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
 
     lv_draw_sw_mask_free_param(&mask_rin_param);
     if(rout > 0) lv_draw_sw_mask_free_param(&mask_rout_param);
-    lv_free(blend_dsc.mask_buf);
+    lv_free(mask_buf);
 
 #endif /*LV_USE_DRAW_MASKS*/
 }

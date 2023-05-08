@@ -384,7 +384,6 @@ static void draw_ticks_and_labels(lv_obj_t * obj, lv_layer_t * layer, const lv_a
     lv_obj_init_draw_label_dsc(obj, LV_PART_TICKS, &label_dsc);
 
     lv_coord_t r_out = r_edge;
-    lv_coord_t r_in_minor = r_out - meter->scale.tick_length;
     lv_coord_t r_in_major = r_out - meter->scale.tick_major_length;
 
     uint32_t minor_cnt = meter->scale.tick_major_nth ? meter->scale.tick_major_nth - 1 : 0xFFFF;

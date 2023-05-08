@@ -79,6 +79,8 @@ typedef enum {
 
 typedef struct {
     const uint8_t * bitmap;
+    uint8_t * bitmap_buf;
+    uint32_t _bitmap_buf_size;
     lv_draw_letter_bitmap_format_t format;
 
     const lv_area_t * bg_coords;
@@ -101,7 +103,8 @@ typedef struct {
 
 typedef void(*lv_draw_letter_cb_t)(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc);
 
-void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, lv_draw_label_dsc_t * dsc, const lv_area_t * coords,
+void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, const lv_draw_label_dsc_t * dsc,
+                                    const lv_area_t * coords,
                                     lv_draw_letter_cb_t cb);
 
 /**********************
@@ -109,6 +112,8 @@ void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, lv_draw_label_ds
  **********************/
 
 LV_ATTRIBUTE_FAST_MEM void lv_draw_label_dsc_init(lv_draw_label_dsc_t * dsc);
+
+void lv_draw_letter_dsc_init(lv_draw_letter_dsc_t * dsc);
 
 /**
  * Write a text

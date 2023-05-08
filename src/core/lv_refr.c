@@ -313,7 +313,7 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
 
     refr_invalid_areas();
 
-    if(disp_refr->inv_p == 0) goto refr_cache_clean_up;
+    if(disp_refr->inv_p == 0) goto refr_finish;
 
     /*If refresh happened ...*/
     /*Call monitor cb if present*/
@@ -348,9 +348,6 @@ refr_clean_up:
     lv_memzero(disp_refr->inv_areas, sizeof(disp_refr->inv_areas));
     lv_memzero(disp_refr->inv_area_joined, sizeof(disp_refr->inv_area_joined));
     disp_refr->inv_p = 0;
-
-refr_cache_clean_up:
-    _lv_font_clean_up_fmt_txt();
 
 #if LV_USE_DRAW_MASKS
     _lv_draw_sw_mask_cleanup();

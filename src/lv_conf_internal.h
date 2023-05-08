@@ -9,6 +9,7 @@
 /* clang-format off */
 
 #include <stdint.h>
+#include "misc/lv_types.h"
 
 /* Handle special Kconfig options */
 #ifndef LV_KCONFIG_IGNORE
@@ -860,6 +861,7 @@
  *- LV_OS_NONE
  *- LV_OS_PTHREAD
  *- LV_OS_FREERTOS
+ *- LV_OS_CMSIS_RTOS2
  *- LV_OS_CUSTOM*/
 #ifndef LV_USE_OS
     #ifdef CONFIG_LV_USE_OS

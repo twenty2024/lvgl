@@ -13,6 +13,7 @@
 #include "../../misc/lv_math.h"
 #include "../../misc/lv_log.h"
 #include "../../misc/lv_mem.h"
+#include "lv_draw_sw.h"
 #include "lv_draw_sw_mask.h"
 
 /*********************
@@ -41,6 +42,8 @@
 
 void lv_draw_sw_mask_rect(lv_draw_unit_t * draw_unit, const lv_draw_mask_rect_dsc_t * dsc, const lv_area_t * coords)
 {
+    LV_UNUSED(coords);
+
     lv_area_t draw_area;
     if(!_lv_area_intersect(&draw_area, &dsc->area, draw_unit->clip_area)) {
         return;

@@ -23,7 +23,8 @@ void lv_example_canvas_4(void)
     dsc.color = lv_palette_main(LV_PALETTE_RED);
     dsc.font = &lv_font_montserrat_18;
     dsc.decor = LV_TEXT_DECOR_UNDERLINE;
+    dsc.text = "Hello";
 
-    lv_canvas_draw_text(canvas, 10, 10, 30, &dsc, "Hello");
+    lv_canvas_draw_text(canvas, 10, 10, 30, &dsc);
 }
 #endif

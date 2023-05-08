@@ -101,9 +101,12 @@ lv_disp_t * lv_disp_create(lv_coord_t hor_res, lv_coord_t ver_res)
 #elif LV_USE_GPU_ARM2D
     lv_disp_set_layer(disp, lv_draw_arm2d_ctx_init, lv_draw_arm2d_ctx_deinit, sizeof(lv_draw_arm2d_ctx_t));
 #else
-    lv_disp_set_layer(disp, lv_draw_sw_init_ctx, lv_draw_sw_deinit_ctx);
+    disp->layer_init = lv_draw_sw_layer_init;
+    disp->layer_deinit = lv_draw_sw_layer_deinit;
+
 #endif
 
+    disp->layer_init(disp);
 
     disp->inv_en_cnt = 1;
 
@@ -455,20 +458,6 @@ LV_ATTRIBUTE_FLUSH_READY bool lv_disp_flush_is_last(lv_disp_t * disp)
 bool lv_disp_is_double_buffered(lv_disp_t * disp)
 {
     return disp->draw_buf_2 ? true : false;
-}
-
-/*---------------------
- * DRAW CONTEXT
- *--------------------*/
-
-void lv_disp_set_layer(lv_disp_t * disp,
-                       void (*layer_init)(lv_disp_t * disp),
-                       void (*layer_deinit)(lv_disp_t * disp, lv_layer_t * layer))
-{
-    disp->layer_init = layer_init;
-    disp->layer_deinit = layer_deinit;
-
-    disp->layer_init(disp);
 }
 
 /*---------------------

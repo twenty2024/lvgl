@@ -24,7 +24,7 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static int generic_callback(void * user_data);
+static void * generic_callback(void * user_data);
 
 /**********************
  *  STATIC VARIABLES
@@ -51,6 +51,7 @@ lv_res_t lv_thread_init(lv_thread_t * thread, lv_thread_prio_t prio, void (*call
 
 lv_res_t lv_thread_delete(lv_thread_t * thread)
 {
+    LV_UNUSED(thread);
     /*How?*/
     return LV_RES_OK;
 }
@@ -149,11 +150,11 @@ lv_res_t lv_thread_sync_delete(lv_thread_sync_t * sync)
  *   STATIC FUNCTIONS
  **********************/
 
-static int generic_callback(void * user_data)
+static void * generic_callback(void * user_data)
 {
     lv_thread_t * thread = user_data;
     thread->callback(thread->user_data);
-    return 0;
+    return NULL;
 }
 
 #endif /*LV_USE_OS == LV_OS_PTHREAD*/

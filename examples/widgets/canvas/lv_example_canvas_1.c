@@ -24,6 +24,7 @@ void lv_example_canvas_1(void)
     lv_draw_label_dsc_t label_dsc;
     lv_draw_label_dsc_init(&label_dsc);
     label_dsc.color = lv_palette_main(LV_PALETTE_ORANGE);
+    label_dsc.text = "Some text on text canvas";
 
     static uint8_t cbuf[LV_CANVAS_BUF_SIZE_TRUE_COLOR(CANVAS_WIDTH, CANVAS_HEIGHT)];
 
@@ -34,7 +35,7 @@ void lv_example_canvas_1(void)
 
     lv_canvas_draw_rect(canvas, 70, 60, 100, 70, &rect_dsc);
 
-    lv_canvas_draw_text(canvas, 40, 20, 100, &label_dsc, "Some text on text canvas");
+    lv_canvas_draw_text(canvas, 40, 20, 100, &label_dsc);
 
     /*Test the rotation. It requires another buffer where the original image is stored.
      *So copy the current image to buffer and rotate it to the canvas*/

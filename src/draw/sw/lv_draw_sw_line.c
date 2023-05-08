@@ -85,7 +85,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_line(lv_draw_unit_t * draw_unit, const lv_
             cir_area.y1 = dsc->p1.y - r;
             cir_area.x2 = dsc->p1.x + r - r_corr;
             cir_area.y2 = dsc->p1.y + r - r_corr ;
-            lv_draw_rect(draw_unit, &cir_dsc, &cir_area);
+            lv_draw_sw_rect(draw_unit, &cir_dsc, &cir_area);
         }
 
         if(dsc->round_end) {
@@ -93,7 +93,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_line(lv_draw_unit_t * draw_unit, const lv_
             cir_area.y1 = dsc->p2.y - r;
             cir_area.x2 = dsc->p2.x + r - r_corr;
             cir_area.y2 = dsc->p2.y + r - r_corr ;
-            lv_draw_rect(draw_unit, &cir_dsc, &cir_area);
+            lv_draw_sw_rect(draw_unit, &cir_dsc, &cir_area);
         }
     }
 }

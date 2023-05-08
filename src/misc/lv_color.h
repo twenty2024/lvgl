@@ -213,6 +213,14 @@ static inline uint32_t lv_color_to_int(lv_color_t c)
 #endif
 }
 
+#if LV_COLOR_DEPTH == 16
+#endif
+
+static inline lv_color_t lv_color_from_int(uint16_t v)
+{
+    return *((lv_color_t *)((uint8_t *)&v));
+}
+
 static inline bool lv_color_eq(lv_color_t c1, lv_color_t c2)
 {
     return lv_color_to_int(c1) == lv_color_to_int(c2);

@@ -54,21 +54,6 @@ typedef uint8_t lv_text_flag_t;
 #endif /*DOXYGEN*/
 
 
-/**
- * State machine for text renderer.*/
-enum _lv_text_cmd_state_t {
-    LV_TEXT_CMD_STATE_WAIT, /**< Waiting for command*/
-    LV_TEXT_CMD_STATE_PAR,  /**< Processing the parameter*/
-    LV_TEXT_CMD_STATE_IN,   /**< Processing the command*/
-};
-
-#ifdef DOXYGEN
-typedef _lv_text_cmd_state_t lv_text_cmd_state_t;
-#else
-typedef uint8_t lv_text_cmd_state_t;
-#endif /*DOXYGEN*/
-
-
 /** Label align policy*/
 enum _lv_text_align_t {
     LV_TEXT_ALIGN_AUTO, /**< Align text auto*/
@@ -126,11 +111,9 @@ uint32_t _lv_txt_get_next_line(const char * txt, const lv_font_t * font, lv_coor
  * UTF-8)
  * @param font pointer to a font
  * @param letter_space letter space
- * @param flag settings for the text from 'txt_flag_t' enum
  * @return length of a char_num long text
  */
-lv_coord_t lv_txt_get_width(const char * txt, uint32_t length, const lv_font_t * font, lv_coord_t letter_space,
-                            lv_text_flag_t flag);
+lv_coord_t lv_txt_get_width(const char * txt, uint32_t length, const lv_font_t * font, lv_coord_t letter_space);
 
 /**
  * Insert a string into an other

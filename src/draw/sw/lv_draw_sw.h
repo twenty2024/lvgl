@@ -45,9 +45,33 @@ typedef struct {
  * GLOBAL PROTOTYPES
  **********************/
 
-lv_layer_t * lv_draw_sw_init_ctx(lv_disp_t * disp);
+lv_layer_t * lv_draw_sw_layer_init(lv_disp_t * disp);
 
-void lv_draw_sw_deinit_ctx(struct _lv_disp_t * disp, lv_layer_t * layer);
+void lv_draw_sw_layer_deinit(struct _lv_disp_t * disp, lv_layer_t * layer);
+
+void lv_draw_unit_sw_create(lv_disp_t * disp, uint32_t cnt);
+
+LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw_dsc,
+                                          const lv_area_t * coords);
+
+void lv_draw_sw_rect(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, const lv_area_t * coords);
+
+void lv_draw_sw_label(lv_draw_unit_t * draw_unit, const lv_draw_label_dsc_t * dsc, const lv_area_t * coords);
+
+void lv_draw_sw_arc(lv_draw_unit_t * draw_unit, const lv_draw_arc_dsc_t * dsc, const lv_area_t * coords);
+
+LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_line(lv_draw_unit_t * draw_unit, const lv_draw_line_dsc_t * dsc);
+
+void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw_dsc, const lv_area_t * coords);
+
+void lv_draw_sw_triangle(lv_draw_unit_t * draw_unit, const lv_draw_triangle_dsc_t * dsc);
+
+void lv_draw_sw_mask_rect(lv_draw_unit_t * draw_unit, const lv_draw_mask_rect_dsc_t * dsc, const lv_area_t * coords);
+
+void lv_draw_sw_transform(lv_draw_unit_t * draw_unit, const lv_area_t * dest_area, const void * src_buf,
+                          lv_coord_t src_w, lv_coord_t src_h, lv_coord_t src_stride,
+                          const lv_draw_img_dsc_t * draw_dsc, const lv_draw_img_sup_t * sup, lv_color_format_t cf, lv_color_t * cbuf,
+                          lv_opa_t * abuf);
 
 /***********************
  * GLOBAL VARIABLES

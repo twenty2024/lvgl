@@ -80,6 +80,27 @@ lv_draw_task_t * lv_draw_add_task(lv_layer_t * layer, const lv_area_t * coords)
     return new_task;
 }
 
+
+void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t)
+{
+    lv_draw_dsc_base_t * base_dsc = t->draw_dsc;
+    base_dsc->layer = layer;
+
+    /*Send LV_EVENT_DRAW_TASK_ADDED and dispatch only on the "main" draw_task
+     *and not on the draw tasks added in the event.
+     *Sending LV_EVENT_DRAW_TASK_ADDED events might cause recursive event sends
+     *Dispatching might remove the "main" draw task while it's still being used in the event*/
+    static bool running = false;
+    if(running == false) {
+        running = true;
+        if(base_dsc->obj && lv_obj_has_flag(base_dsc->obj, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS)) {
+            lv_obj_send_event(base_dsc->obj, LV_EVENT_DRAW_TASK_ADDED, t);
+        }
+        lv_draw_dispatch();
+        running = false;
+    }
+}
+
 void lv_draw_dispatch(void)
 {
     lv_disp_t * disp = _lv_refr_get_disp_refreshing();
@@ -116,7 +137,7 @@ void lv_draw_dispatch(void)
                 if(t->type == LV_DRAW_TASK_TYPE_LABEL) {
                     lv_draw_label_dsc_t * draw_label_dsc = t->draw_dsc;
                     if(draw_label_dsc->text_local) {
-                        lv_free(draw_label_dsc->text);
+                        lv_free((void *)draw_label_dsc->text);
                         draw_label_dsc->text = NULL;
                     }
                 }
@@ -132,18 +153,18 @@ void lv_draw_dispatch(void)
 
         /*This layer is ready, enable blending its buffer*/
         if(layer->parent && layer->all_tasks_added && layer->draw_task_head == NULL) {
-            /*Find a draw task with TYPE_LAYER in the layer where the is the src is this layer*/
-            lv_draw_task_t * t = layer->parent->draw_task_head;
-            while(t) {
-                if(t->type == LV_DRAW_TASK_TYPE_LAYER && t->state == LV_DRAW_TASK_STATE_WAITING) {
-                    lv_draw_img_dsc_t * draw_dsc = t->draw_dsc;
+            /*Find a draw task with TYPE_LAYER in the layer where the src is this layer*/
+            lv_draw_task_t * t_src = layer->parent->draw_task_head;
+            while(t_src) {
+                if(t_src->type == LV_DRAW_TASK_TYPE_LAYER && t_src->state == LV_DRAW_TASK_STATE_WAITING) {
+                    lv_draw_img_dsc_t * draw_dsc = t_src->draw_dsc;
                     if(draw_dsc->src == layer) {
-                        t->state = LV_DRAW_TASK_STATE_QUEUED;
+                        t_src->state = LV_DRAW_TASK_STATE_QUEUED;
                         lv_draw_dispatch_request();
                         break;
                     }
                 }
-                t = t->next;
+                t_src = t_src->next;
             }
         }
         /*Assign draw tasks to the draw_units*/

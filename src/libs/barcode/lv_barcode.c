@@ -121,7 +121,7 @@ lv_res_t lv_barcode_update(lv_obj_t * obj, const char * data)
 
     for(lv_coord_t x = 0; x < barcode_w; x++) {
         lv_color_t color;
-        lv_color_set_int(&color, out_buf[x] ? 0 : 1);
+        color = lv_color_from_int(out_buf[x] ? 0 : 1);
         for(uint16_t i = 0; i < scale; i++) {
             lv_canvas_set_px(obj, x * scale + i, 0, color, LV_OPA_COVER);
         }
@@ -167,8 +167,8 @@ static void lv_barcode_constructor(const lv_obj_class_t * class_p, lv_obj_t * ob
     LV_UNUSED(class_p);
 
     lv_barcode_t * barcode = (lv_barcode_t *)obj;
-    barcode->dark_color = lv_color_to32(lv_color_black());
-    barcode->light_color = lv_color_to32(lv_color_white());
+    barcode->dark_color = lv_color_to_xrgb8888(lv_color_black());
+    barcode->light_color = lv_color_to_xrgb8888(lv_color_white());
     barcode->scale = 1;
 }
 

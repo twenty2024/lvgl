@@ -77,3 +77,6 @@
 #define LV_USE_DEMO_WIDGETS     1
 #define LV_USE_DEMO_STRESS      1
 
+
+#define LV_USE_COLORWHEEL   0
+

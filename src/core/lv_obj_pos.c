@@ -88,7 +88,6 @@ bool lv_obj_refr_size(lv_obj_t * obj)
     lv_obj_t * parent = lv_obj_get_parent(obj);
     if(parent == NULL) return false;
 
-    lv_coord_t sl_ori = lv_obj_get_scroll_left(obj);
     bool w_is_content = false;
     bool w_is_pct = false;
 
@@ -122,7 +121,6 @@ bool lv_obj_refr_size(lv_obj_t * obj)
         w = lv_clamp_width(w, minw, maxw, parent_w);
     }
 
-    lv_coord_t st_ori = lv_obj_get_scroll_top(obj);
     lv_coord_t h;
     bool h_is_content = false;
     bool h_is_pct = false;

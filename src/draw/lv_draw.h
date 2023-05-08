@@ -171,6 +171,8 @@ void lv_draw_wait_for_finish(lv_layer_t * layer);
 
 lv_draw_task_t * lv_draw_add_task(lv_layer_t * layer, const lv_area_t * coords);
 
+void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t);
+
 void lv_draw_dispatch(void);
 
 /**

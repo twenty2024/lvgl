@@ -53,8 +53,7 @@ static size_t get_text_length(const char * text);
 static void copy_text_to_label(lv_label_t * label, const char * text);
 static lv_text_flag_t get_label_flags(lv_label_t * label);
 static void calculate_x_coordinate(lv_coord_t * x, const lv_text_align_t align, const char * txt,
-                                   uint32_t length, const lv_font_t * font, lv_coord_t letter_space,
-                                   lv_text_flag_t flag, lv_area_t * txt_coords);
+                                   uint32_t length, const lv_font_t * font, lv_coord_t letter_space, lv_area_t * txt_coords);
 
 /**********************
  *  STATIC VARIABLES
@@ -362,11 +361,11 @@ void lv_label_get_letter_pos(const lv_obj_t * obj, uint32_t char_id, lv_point_t 
 #endif
 
     /*Calculate the x coordinate*/
-    lv_coord_t x = lv_txt_get_width(bidi_txt, visual_byte_pos, font, letter_space, flag);
+    lv_coord_t x = lv_txt_get_width(bidi_txt, visual_byte_pos, font, letter_space);
     if(char_id != line_start) x += letter_space;
 
     uint32_t length = new_line_start - line_start;
-    calculate_x_coordinate(&x, align, bidi_txt, length, font, letter_space, flag, &txt_coords);
+    calculate_x_coordinate(&x, align, bidi_txt, length, font, letter_space, &txt_coords);
     pos->x = x;
     pos->y = y;
 
@@ -433,7 +432,7 @@ uint32_t lv_label_get_letter_on(const lv_obj_t * obj, lv_point_t * pos_in)
     lv_coord_t x = 0;
     const lv_text_align_t align = lv_obj_calculate_style_text_align(obj, LV_PART_MAIN, label->text);
     uint32_t length = new_line_start - line_start;
-    calculate_x_coordinate(&x, align, bidi_txt, length, font, letter_space, flag, &txt_coords);
+    calculate_x_coordinate(&x, align, bidi_txt, length, font, letter_space, &txt_coords);
 
     uint32_t i = 0;
     uint32_t i_act = i;
@@ -516,11 +515,11 @@ bool lv_label_is_char_under_pos(const lv_obj_t * obj, lv_point_t * pos)
 
     lv_coord_t x = 0;
     if(align == LV_TEXT_ALIGN_CENTER) {
-        const lv_coord_t line_w = lv_txt_get_width(&txt[line_start], new_line_start - line_start, font, letter_space, flag);
+        const lv_coord_t line_w = lv_txt_get_width(&txt[line_start], new_line_start - line_start, font, letter_space);
         x += lv_area_get_width(&txt_coords) / 2 - line_w / 2;
     }
     else if(align == LV_TEXT_ALIGN_RIGHT) {
-        const lv_coord_t line_w = lv_txt_get_width(&txt[line_start], new_line_start - line_start, font, letter_space, flag);
+        const lv_coord_t line_w = lv_txt_get_width(&txt[line_start], new_line_start - line_start, font, letter_space);
         x += lv_area_get_width(&txt_coords) - line_w;
     }
 
@@ -1278,14 +1277,14 @@ static lv_text_flag_t get_label_flags(lv_label_t * label)
 
 /* Function created because of this pattern be used in multiple functions */
 static void calculate_x_coordinate(lv_coord_t * x, const lv_text_align_t align, const char * txt, uint32_t length,
-                                   const lv_font_t * font, lv_coord_t letter_space, lv_text_flag_t flag, lv_area_t * txt_coords)
+                                   const lv_font_t * font, lv_coord_t letter_space, lv_area_t * txt_coords)
 {
     if(align == LV_TEXT_ALIGN_CENTER) {
-        const lv_coord_t line_w = lv_txt_get_width(txt, length, font, letter_space, flag);
+        const lv_coord_t line_w = lv_txt_get_width(txt, length, font, letter_space);
         *x += lv_area_get_width(txt_coords) / 2 - line_w / 2;
     }
     else if(align == LV_TEXT_ALIGN_RIGHT) {
-        const lv_coord_t line_w = lv_txt_get_width(txt, length, font, letter_space, flag);
+        const lv_coord_t line_w = lv_txt_get_width(txt, length, font, letter_space);
         *x += lv_area_get_width(txt_coords) - line_w;
     }
     else {

@@ -1409,7 +1409,12 @@ static void chart_event_cb(lv_event_t * e)
         }
 
 
+        static uint32_t cnt = 0;
 
+        if(cnt == 35) {
+            printf("%d\n", cnt);
+        }
+        cnt++;
         bool add_value = false;
         if(base_dsc->part == LV_PART_INDICATOR && lv_chart_get_pressed_point(obj) == base_dsc->id2) {
             lv_draw_rect_dsc_t * rect_dsc = draw_task->draw_dsc;

@@ -907,7 +907,7 @@ static void lv_draw_span(lv_obj_t * obj, lv_layer_t * layer)
                 if(last_snippet->txt[last_snippet->bytes] != '\0') {
                     last_snippet->bytes = lv_strlen(last_snippet->txt);
                     last_snippet->txt_w = lv_txt_get_width(last_snippet->txt, last_snippet->bytes, last_snippet->font,
-                                                           last_snippet->letter_space, txt_flag);
+                                                           last_snippet->letter_space);
                 }
                 ellipsis_valid = spans->overflow == LV_SPAN_OVERFLOW_ELLIPSIS ? true : false;
                 is_end_line = true;

@@ -69,7 +69,7 @@ LV_ATTRIBUTE_FAST_MEM static inline lv_color_t lv_color_mix(lv_color_t c1, lv_co
     uint32_t bg = (uint32_t)(c2_16 | ((uint32_t)c2_16 << 16)) & 0x7E0F81F;
     uint32_t fg = (uint32_t)(c1_16 | ((uint32_t)c1_16 << 16)) & 0x7E0F81F;
     uint32_t result = ((((fg - bg) * mix) >> 5) + bg) & 0x7E0F81F;
-    lv_color_set_int(&ret, (uint16_t)((result >> 16) | result));
+    ret = lv_color_from_int((uint16_t)((result >> 16) | result));
 #elif LV_COLOR_DEPTH == 8
     LV_COLOR_SET_R(ret, LV_UDIV255((uint16_t)LV_COLOR_GET_R(c1) * mix + LV_COLOR_GET_R(c2) *
                                    (255 - mix) + LV_COLOR_MIX_ROUND_OFS));

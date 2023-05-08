@@ -24,8 +24,10 @@ void lv_example_canvas_7(void)
     dsc.width = 4;
     dsc.round_end = 1;
     dsc.round_start = 1;
-
-    lv_point_t p[] = {{15, 15}, {35, 10}, {10, 40}};
-    lv_canvas_draw_line(canvas, p, 3, &dsc);
+    dsc.p1.x = 15;
+    dsc.p1.y = 15;
+    dsc.p2.x = 35;
+    dsc.p2.y = 10;
+    lv_canvas_draw_line(canvas, &dsc);
 }
 #endif

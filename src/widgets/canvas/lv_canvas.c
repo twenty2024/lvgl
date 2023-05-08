@@ -32,6 +32,12 @@ static void lv_canvas_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 static lv_layer_t * init_fake_disp(lv_obj_t * canvas, lv_area_t * clip_area);
 static void deinit_fake_disp(lv_obj_t * canvas, lv_layer_t * layer);
 
+
+void lv_draw_sw_transform(lv_draw_unit_t * draw_unit, const lv_area_t * dest_area, const void * src_buf,
+                          lv_coord_t src_w, lv_coord_t src_h, lv_coord_t src_stride,
+                          const lv_draw_img_dsc_t * draw_dsc, const lv_draw_img_sup_t * sup, lv_color_format_t cf, lv_color_t * cbuf,
+                          lv_opa_t * abuf);
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -96,12 +102,16 @@ void lv_canvas_set_px(lv_obj_t * obj, lv_coord_t x, lv_coord_t y, lv_color_t col
         *buf &= ~(1 << bit);
         *buf |= c_int << bit;
     }
-    else {
-        uint8_t px_size = lv_color_format_get_size(canvas->dsc.header.cf);
-        uint32_t px = canvas->dsc.header.w * y * px_size + x * px_size;
-        uint32_t native_color = lv_color_to_int(color);
-        native_color += opa << (LV_COLOR_FORMAT_NATIVE_ALPHA_OFS * 8);
-        lv_color_from_native_alpha((uint8_t *)&native_color, (uint8_t *)canvas->dsc.data + px, canvas->dsc.header.cf, 1);
+    else if(canvas->dsc.header.cf == LV_COLOR_FORMAT_A8) {
+        uint8_t * buf = (uint8_t *)canvas->dsc.data;
+        buf += canvas->dsc.header.w * y + x;
+        *buf = opa;
+    }
+    else if(canvas->dsc.header.cf == LV_COLOR_FORMAT_ARGB8888) {
+        lv_color32_t * buf = (lv_color32_t *)canvas->dsc.data;
+        buf += canvas->dsc.header.w * y + x;
+        *buf = lv_color_to_xrgb8888(color);
+        buf->alpha = opa;
     }
     lv_obj_invalidate(obj);
 }
@@ -128,7 +138,7 @@ void lv_canvas_get_px(lv_obj_t * obj, lv_coord_t x, lv_coord_t y, lv_color_t * c
     lv_canvas_t * canvas = (lv_canvas_t *)obj;
     uint8_t px_size = lv_color_format_get_size(canvas->dsc.header.cf);
     uint32_t px = canvas->dsc.header.w * y * px_size + x * px_size;
-    lv_color_to_native((uint8_t *)canvas->dsc.data + px, canvas->dsc.header.cf, color, opa, alpha_color, 1);
+    lv_color_buf_to_native((uint8_t *)canvas->dsc.data + px, canvas->dsc.header.cf, color, opa, alpha_color, 1);
 }
 
 lv_img_dsc_t * lv_canvas_get_img(lv_obj_t * obj)
@@ -197,16 +207,11 @@ void lv_canvas_transform(lv_obj_t * obj, lv_img_dsc_t * src_img, int16_t angle, 
     lv_draw_img_sup_t sup;
     lv_memzero(&sup, sizeof(sup));
 
-    /*Create a dummy display to fool the lv_draw function.
-     *It will think it draws to real screen.*/
-    lv_area_t clip_area;
-    lv_layer_t * layer = init_fake_disp(obj, &clip_area);
-
     lv_color_t * cbuf = lv_malloc(dest_img->header.w * sizeof(lv_color_t));
     lv_opa_t * abuf = lv_malloc(dest_img->header.w * sizeof(lv_opa_t));
     for(y = 0; y < dest_img->header.h; y++) {
         if(y + offset_y >= 0) {
-            lv_draw_sw_transform(layer, &dest_area, src_img->data, src_img->header.w, src_img->header.h, src_img->header.w,
+            lv_draw_sw_transform(NULL, &dest_area, src_img->data, src_img->header.w, src_img->header.h, src_img->header.w,
                                  &draw_dsc, &sup, canvas->dsc.header.cf, cbuf, abuf);
 
             for(x = 0; x < dest_img->header.w; x++) {
@@ -505,7 +510,7 @@ void lv_canvas_draw_rect(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord
 }
 
 void lv_canvas_draw_text(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord_t max_w,
-                         lv_draw_label_dsc_t * draw_dsc, const char * txt)
+                         lv_draw_label_dsc_t * draw_dsc)
 {
     LV_ASSERT_OBJ(canvas, MY_CLASS);
 
@@ -526,15 +531,14 @@ void lv_canvas_draw_text(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord
     coords.y1 = y;
     coords.x2 = x + max_w - 1;
     coords.y2 = dsc->header.h - 1;
-    lv_draw_label(layer, draw_dsc, &coords, txt, NULL);
+    lv_draw_label(layer, draw_dsc, &coords);
 
     deinit_fake_disp(canvas, layer);
 
     lv_obj_invalidate(canvas);
 }
 
-void lv_canvas_draw_img(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, const void * src,
-                        const lv_draw_img_dsc_t * draw_dsc)
+void lv_canvas_draw_img(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, const lv_draw_img_dsc_t * draw_dsc)
 {
     LV_ASSERT_OBJ(canvas, MY_CLASS);
 
@@ -546,7 +550,7 @@ void lv_canvas_draw_img(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, const voi
     }
 
     lv_img_header_t header;
-    lv_res_t res = lv_img_decoder_get_info(src, &header);
+    lv_res_t res = lv_img_decoder_get_info(draw_dsc->src, &header);
     if(res != LV_RES_OK) {
         LV_LOG_WARN("couldn't get the image data.");
         return;
@@ -562,15 +566,14 @@ void lv_canvas_draw_img(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, const voi
     coords.x2 = x + header.w - 1;
     coords.y2 = y + header.h - 1;
 
-    lv_draw_img(layer, draw_dsc, &coords, src);
+    lv_draw_img(layer, draw_dsc, &coords);
 
     deinit_fake_disp(canvas, layer);
 
     lv_obj_invalidate(canvas);
 }
 
-void lv_canvas_draw_line(lv_obj_t * canvas, const lv_point_t points[], uint32_t point_cnt,
-                         const lv_draw_line_dsc_t * draw_dsc)
+void lv_canvas_draw_line(lv_obj_t * canvas, const lv_draw_line_dsc_t * draw_dsc)
 {
     LV_ASSERT_OBJ(canvas, MY_CLASS);
 
@@ -586,18 +589,14 @@ void lv_canvas_draw_line(lv_obj_t * canvas, const lv_point_t points[], uint32_t 
     lv_area_t clip_area;
     lv_layer_t * layer = init_fake_disp(canvas, &clip_area);
 
-    uint32_t i;
-    for(i = 0; i < point_cnt - 1; i++) {
-        lv_draw_line(layer, draw_dsc, &points[i], &points[i + 1]);
-    }
+    lv_draw_line(layer, draw_dsc);
 
     deinit_fake_disp(canvas, layer);
 
     lv_obj_invalidate(canvas);
 }
 
-void lv_canvas_draw_polygon(lv_obj_t * canvas, const lv_point_t points[], uint32_t point_cnt,
-                            const lv_draw_rect_dsc_t * draw_dsc)
+void lv_canvas_draw_triangle(lv_obj_t * canvas, const lv_draw_triangle_dsc_t * draw_dsc)
 {
     LV_ASSERT_OBJ(canvas, MY_CLASS);
 
@@ -613,15 +612,14 @@ void lv_canvas_draw_polygon(lv_obj_t * canvas, const lv_point_t points[], uint32
     lv_area_t clip_area;
     lv_layer_t * layer = init_fake_disp(canvas, &clip_area);
 
-    lv_draw_polygon(layer, draw_dsc, points, point_cnt);
+    lv_draw_triangle(layer, draw_dsc);
 
     deinit_fake_disp(canvas, layer);
 
     lv_obj_invalidate(canvas);
 }
 
-void lv_canvas_draw_arc(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord_t r, int32_t start_angle,
-                        int32_t end_angle, const lv_draw_arc_dsc_t * draw_dsc)
+void lv_canvas_draw_arc(lv_obj_t * canvas, const lv_draw_arc_dsc_t * draw_dsc)
 {
 #if LV_USE_DRAW_MASKS
     LV_ASSERT_OBJ(canvas, MY_CLASS);
@@ -638,8 +636,7 @@ void lv_canvas_draw_arc(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord_
     lv_area_t clip_area;
     lv_layer_t * layer = init_fake_disp(canvas, &clip_area);
 
-    lv_point_t p = {x, y};
-    lv_draw_arc(layer, draw_dsc, &p, r,  start_angle, end_angle);
+    lv_draw_arc(layer, draw_dsc);
 
     deinit_fake_disp(canvas, layer);
 
@@ -698,12 +695,9 @@ static lv_layer_t * init_fake_disp(lv_obj_t * canvas, lv_area_t * clip_area)
     clip_area->y1 = 0;
     clip_area->y2 = dsc->header.h - 1;
 
-    lv_layer_t * layer = lv_malloc(sizeof(lv_draw_sw_ctx_t));
+    lv_layer_t * layer = lv_draw_layer_create(NULL, dsc->header.cf, clip_area);
     LV_ASSERT_MALLOC(layer);
     if(layer == NULL)  return NULL;
-    lv_draw_sw_init_ctx(NULL, layer);
-    layer->clip_area = clip_area;
-    layer->buf_area = clip_area;
     layer->buf = (void *)dsc->data;
     layer->color_format = dsc->header.cf;
 
@@ -713,7 +707,7 @@ static lv_layer_t * init_fake_disp(lv_obj_t * canvas, lv_area_t * clip_area)
 static void deinit_fake_disp(lv_obj_t * canvas, lv_layer_t * layer)
 {
     LV_UNUSED(canvas);
-    lv_draw_sw_deinit_ctx(NULL, layer);
+    lv_draw_sw_layer_deinit(NULL, layer);
     lv_free(layer);
 }
 

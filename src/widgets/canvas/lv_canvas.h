@@ -170,20 +170,18 @@ void lv_canvas_draw_rect(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord
  * @param y        top coordinate of the text
  * @param max_w    max width of the text. The text will be wrapped to fit into this size
  * @param draw_dsc pointer to a valid label descriptor `lv_draw_label_dsc_t`
- * @param txt      text to display
  */
 void lv_canvas_draw_text(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord_t max_w,
-                         lv_draw_label_dsc_t * draw_dsc, const char * txt);
+                         lv_draw_label_dsc_t * draw_dsc);
 
 /**
  * Draw an image on the canvas
  * @param canvas   pointer to a canvas object
  * @param x        left coordinate of the image
  * @param y        top coordinate of the image
- * @param src      image source. Can be a pointer an `lv_img_dsc_t` variable or a path an image.
  * @param draw_dsc pointer to a valid label descriptor `lv_draw_img_dsc_t`
  */
-void lv_canvas_draw_img(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, const void * src,
+void lv_canvas_draw_img(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y,
                         const lv_draw_img_dsc_t * draw_dsc);
 
 /**
@@ -193,8 +191,7 @@ void lv_canvas_draw_img(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, const voi
  * @param point_cnt  number of points
  * @param draw_dsc   pointer to an initialized `lv_draw_line_dsc_t` variable
  */
-void lv_canvas_draw_line(lv_obj_t * canvas, const lv_point_t points[], uint32_t point_cnt,
-                         const lv_draw_line_dsc_t * draw_dsc);
+void lv_canvas_draw_line(lv_obj_t * canvas, const lv_draw_line_dsc_t * draw_dsc);
 
 /**
  * Draw a polygon on the canvas
@@ -203,8 +200,7 @@ void lv_canvas_draw_line(lv_obj_t * canvas, const lv_point_t points[], uint32_t 
  * @param point_cnt number of points
  * @param draw_dsc  pointer to an initialized `lv_draw_rect_dsc_t` variable
  */
-void lv_canvas_draw_polygon(lv_obj_t * canvas, const lv_point_t points[], uint32_t point_cnt,
-                            const lv_draw_rect_dsc_t * draw_dsc);
+void lv_canvas_draw_triangle(lv_obj_t * canvas, const lv_draw_triangle_dsc_t * draw_dsc);
 
 /**
  * Draw an arc on the canvas
@@ -216,8 +212,7 @@ void lv_canvas_draw_polygon(lv_obj_t * canvas, const lv_point_t points[], uint32
  * @param end_angle   end angle in degrees
  * @param draw_dsc    pointer to an initialized `lv_draw_line_dsc_t` variable
  */
-void lv_canvas_draw_arc(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord_t r, int32_t start_angle,
-                        int32_t end_angle, const lv_draw_arc_dsc_t * draw_dsc);
+void lv_canvas_draw_arc(lv_obj_t * canvas, const lv_draw_arc_dsc_t * draw_dsc);
 
 /**********************
  *      MACROS

@@ -26,7 +26,7 @@ typedef struct {
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static const uint8_t * imgfont_get_glyph_bitmap(const lv_font_t * font, uint32_t unicode);
+static const uint8_t * imgfont_get_glyph_bitmap(const lv_font_t * font, uint32_t unicode, uint8_t * bitmap_buf);
 static bool imgfont_get_glyph_dsc(const lv_font_t * font, lv_font_glyph_dsc_t * dsc_out,
                                   uint32_t unicode, uint32_t unicode_next);
 
@@ -84,11 +84,10 @@ void lv_imgfont_destroy(lv_font_t * font)
  *   STATIC FUNCTIONS
  **********************/
 
-static const uint8_t * imgfont_get_glyph_bitmap(const lv_font_t * font, uint32_t unicode)
+static const uint8_t * imgfont_get_glyph_bitmap(const lv_font_t * font, uint32_t unicode, uint8_t * bitmap_buf)
 {
-    LV_UNUSED(unicode);
+    LV_UNUSED(bitmap_buf);
     LV_ASSERT_NULL(font);
-
     imgfont_dsc_t * dsc = (imgfont_dsc_t *)font->dsc;
     lv_coord_t offset_y = 0;
     const void * img_src = dsc->path_cb(dsc->font, unicode, 0, &offset_y, dsc->user_data);

@@ -306,20 +306,6 @@ LV_ATTRIBUTE_FLUSH_READY bool lv_disp_flush_is_last(lv_disp_t * disp);
 bool lv_disp_is_double_buffered(lv_disp_t * disp);
 
 /*---------------------
- * DRAW CONTEXT
- *--------------------*/
-
-/**
- * Initialize a new draw context for the display
- * @param disp              pointer to a display
- * @param layer_init     init callback
- * @param layer_deinit   deinit callback
- */
-void lv_disp_set_layer(lv_disp_t * disp,
-                       void (*layer_init)(lv_disp_t * disp),
-                       void (*layer_deinit)(lv_disp_t * disp, lv_layer_t * layer));
-
-/*---------------------
  * SCREENS
  *--------------------*/
 

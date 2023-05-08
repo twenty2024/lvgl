@@ -12,6 +12,7 @@
 #include "../core/lv_obj_event.h"
 #include "../misc/lv_bidi.h"
 #include "../misc/lv_assert.h"
+#include "../misc/lv_mem.h"
 
 /*********************
  *      DEFINES
@@ -84,21 +85,10 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_label(lv_layer_t * layer, const lv_draw_label
     if(dsc->text_local) {
         lv_draw_label_dsc_t * new_dsc = t->draw_dsc;
         new_dsc->text = lv_malloc(lv_strlen(new_dsc->text) + 1);
-        strcpy(new_dsc->text, dsc->text);
+        lv_strcpy((char *)new_dsc->text, dsc->text);
     }
 
-    lv_draw_dsc_base_t * base_dsc = t->draw_dsc;
-    base_dsc->layer = layer;
-
-    if(base_dsc->obj && lv_obj_has_flag(base_dsc->obj, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS)) {
-        /*Disable sending LV_EVENT_DRAW_TASK_ADDED first to avoid triggering recursive
-         *event calls due draw task adds in the event*/
-        lv_obj_clear_flag(base_dsc->obj, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS);
-        lv_obj_send_event(dsc->base.obj, LV_EVENT_DRAW_TASK_ADDED, t);
-        lv_obj_add_flag(base_dsc->obj, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS);
-    }
-
-    lv_draw_dispatch();
+    lv_draw_finalize_task_creation(layer, t);
 }
 
 
@@ -135,13 +125,13 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_letter(lv_layer_t * layer, lv_draw_label_dsc_
 }
 
 
-void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, lv_draw_label_dsc_t * dsc, const lv_area_t * coords,
+void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, const lv_draw_label_dsc_t * dsc,
+                                    const lv_area_t * coords,
                                     lv_draw_letter_cb_t cb)
 {
     const lv_font_t * font = dsc->font;
     int32_t w;
 
-    lv_layer_t * layer = draw_unit->target_layer;
     lv_area_t clipped_area;
     bool clip_ok = _lv_area_intersect(&clipped_area, coords, draw_unit->clip_area);
     if(!clip_ok) return;
@@ -218,14 +208,14 @@ void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, lv_draw_label_ds
 
     /*Align to middle*/
     if(align == LV_TEXT_ALIGN_CENTER) {
-        line_width = lv_txt_get_width(&dsc->text[line_start], line_end - line_start, font, dsc->letter_space, dsc->flag);
+        line_width = lv_txt_get_width(&dsc->text[line_start], line_end - line_start, font, dsc->letter_space);
 
         pos.x += (lv_area_get_width(coords) - line_width) / 2;
 
     }
     /*Align to the right*/
     else if(align == LV_TEXT_ALIGN_RIGHT) {
-        line_width = lv_txt_get_width(&dsc->text[line_start], line_end - line_start, font, dsc->letter_space, dsc->flag);
+        line_width = lv_txt_get_width(&dsc->text[line_start], line_end - line_start, font, dsc->letter_space);
         pos.x += lv_area_get_width(coords) - line_width;
     }
 
@@ -319,22 +309,23 @@ void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, lv_draw_label_ds
         /*Align to middle*/
         if(align == LV_TEXT_ALIGN_CENTER) {
             line_width =
-                lv_txt_get_width(&dsc->text[line_start], line_end - line_start, font, dsc->letter_space, dsc->flag);
+                lv_txt_get_width(&dsc->text[line_start], line_end - line_start, font, dsc->letter_space);
 
             pos.x += (lv_area_get_width(coords) - line_width) / 2;
         }
         /*Align to the right*/
         else if(align == LV_TEXT_ALIGN_RIGHT) {
             line_width =
-                lv_txt_get_width(&dsc->text[line_start], line_end - line_start, font, dsc->letter_space, dsc->flag);
+                lv_txt_get_width(&dsc->text[line_start], line_end - line_start, font, dsc->letter_space);
             pos.x += lv_area_get_width(coords) - line_width;
         }
 
         /*Go the next line position*/
         pos.y += line_height;
 
-        if(pos.y > draw_unit->clip_area->y2) return;
+        if(pos.y > draw_unit->clip_area->y2) break;
     }
+    lv_free(draw_letter_dsc.bitmap_buf);
 
     LV_ASSERT_MEM_INTEGRITY();
 }
@@ -347,7 +338,6 @@ void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, lv_draw_label_ds
 static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc,  const lv_point_t * pos,
                         const lv_font_t * font, uint32_t letter, lv_draw_letter_cb_t cb)
 {
-    lv_layer_t * layer = draw_unit->target_layer;
     lv_font_glyph_dsc_t g;
 
     bool g_ret = lv_font_get_glyph_dsc(font, &g, letter, '\0');
@@ -374,8 +364,13 @@ static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc, 
     /*If the letter is completely out of mask don't draw it*/
     if(_lv_area_is_out(&letter_coords, draw_unit->clip_area, 0)) return;
 
-    uint8_t buf_out[100 * 100];
-    dsc->bitmap = lv_font_get_glyph_bitmap(g.resolved_font, letter, buf_out);
+    uint32_t bitmap_size = g.box_w * g.box_h;
+    if(dsc->_bitmap_buf_size < bitmap_size) {
+        dsc->bitmap_buf = lv_realloc(dsc->bitmap_buf, bitmap_size);
+        dsc->_bitmap_buf_size = bitmap_size;
+    }
+
+    dsc->bitmap = lv_font_get_glyph_bitmap(g.resolved_font, letter, dsc->bitmap_buf);
     dsc->letter_coords = &letter_coords;
     if(g.bpp == LV_IMGFONT_BPP) dsc->format = LV_DRAW_LETTER_BITMAP_FORMAT_IMAGE;
     else dsc->format = LV_DRAW_LETTER_BITMAP_FORMAT_A8;

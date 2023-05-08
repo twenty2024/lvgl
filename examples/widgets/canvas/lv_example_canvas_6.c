@@ -18,10 +18,10 @@ void lv_example_canvas_6(void)
     lv_canvas_fill_bg(canvas, lv_color_hex3(0xccc), LV_OPA_COVER);
     lv_obj_center(canvas);
 
+    LV_IMG_DECLARE(img_star);
     lv_draw_img_dsc_t dsc;
     lv_draw_img_dsc_init(&dsc);
-
-    LV_IMG_DECLARE(img_star);
-    lv_canvas_draw_img(canvas, 5, 5, &img_star, &dsc);
+    dsc.src = &img_star;
+    lv_canvas_draw_img(canvas, 5, 5, &dsc);
 }
 #endif
