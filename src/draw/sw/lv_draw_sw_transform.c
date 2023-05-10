@@ -61,11 +61,9 @@ static void rgb_no_aa_chroma_key(const uint8_t * src, lv_coord_t src_w, lv_coord
                                  int32_t xs_ups, int32_t ys_ups, int32_t xs_step, int32_t ys_step,
                                  int32_t x_end, lv_color_t * cbuf, uint8_t * abuf, lv_color_t chroma_key_color);
 
-#if LV_COLOR_DEPTH == 16
 static void rgb565a8_no_aa(const uint8_t * src, lv_coord_t src_w, lv_coord_t src_h, lv_coord_t src_stride,
                            int32_t xs_ups, int32_t ys_ups, int32_t xs_step, int32_t ys_step,
                            int32_t x_end, lv_color_t * cbuf, uint8_t * abuf);
-#endif
 
 static void rgb_aa(const uint8_t * src, lv_coord_t src_w, lv_coord_t src_h, lv_coord_t src_stride,
                    int32_t xs_ups, int32_t ys_ups, int32_t xs_step, int32_t ys_step,
@@ -314,7 +312,6 @@ static void argb8888_no_aa(const uint8_t * src, lv_coord_t src_w, lv_coord_t src
     }
 }
 
-#if LV_COLOR_DEPTH == 16
 static void rgb565a8_no_aa(const uint8_t * src, lv_coord_t src_w, lv_coord_t src_h, lv_coord_t src_stride,
                            int32_t xs_ups, int32_t ys_ups, int32_t xs_step, int32_t ys_step,
                            int32_t x_end, lv_color_t * cbuf, uint8_t * abuf)
@@ -343,8 +340,6 @@ static void rgb565a8_no_aa(const uint8_t * src, lv_coord_t src_w, lv_coord_t src
         }
     }
 }
-#endif
-
 
 static void rgb_aa(const uint8_t * src, lv_coord_t src_w, lv_coord_t src_h, lv_coord_t src_stride,
                    int32_t xs_ups, int32_t ys_ups, int32_t xs_step, int32_t ys_step,
