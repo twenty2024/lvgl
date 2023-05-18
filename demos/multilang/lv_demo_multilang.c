@@ -100,14 +100,14 @@ static card_info_t card_info[] = {
     CARD_INFO_SET(&img_multilang_avatar_16, "Elin Lindqvist", "Språkinlärare och kulturentusiast "),
     CARD_INFO_SET(&img_multilang_avatar_17, "William Carter", "DIY enthusiast and home improvement guru "),
     CARD_INFO_SET(&img_multilang_avatar_22, "Ava Williams", "Artist and creative visionary 🎨"),
-    CARD_INFO_SET(&img_multilang_avatar_19, "Olivia Davis", "Minimalist with a passion for organization "),
-    CARD_INFO_SET(&img_multilang_avatar_28, "Samantha Rodriguez", "Music lover, constantly discovering new artists"),
-    CARD_INFO_SET(&img_multilang_avatar_20, "Isabella Evans", "Yoga practitioner and spiritual seeker 🧘‍♀️"),
-    CARD_INFO_SET(&img_multilang_avatar_21, "Diogo Pereira Costa", "Entusiasta de tecnologia e amante de gadgets. "),
-    CARD_INFO_SET(&img_multilang_avatar_23, "Rachel Thompson", "Book club member and avid reader "),
-    CARD_INFO_SET(&img_multilang_avatar_24, "Tyler Jackson", "Sports coach and mentor "),
-    CARD_INFO_SET(&img_multilang_avatar_26, "Sarah Jackson", "Fitness trainer and wellness coach "),
-    CARD_INFO_SET(&img_multilang_avatar_27, "Sophia Brown", "Travel blogger and adventurer "),
+    //    CARD_INFO_SET(&img_multilang_avatar_19, "Olivia Davis", "Minimalist with a passion for organization "),
+    //    CARD_INFO_SET(&img_multilang_avatar_20, "Isabella Evans", "Yoga practitioner and spiritual seeker 🧘‍♀️"),
+    //    CARD_INFO_SET(&img_multilang_avatar_21, "Diogo Pereira Costa", "Entusiasta de tecnologia e amante de gadgets. "),
+    //    CARD_INFO_SET(&img_multilang_avatar_23, "Rachel Thompson", "Book club member and avid reader "),
+    //    CARD_INFO_SET(&img_multilang_avatar_24, "Tyler Jackson", "Sports coach and mentor "),
+    //    CARD_INFO_SET(&img_multilang_avatar_26, "Sarah Jackson", "Fitness trainer and wellness coach "),
+    //    CARD_INFO_SET(&img_multilang_avatar_27, "Sophia Brown", "Travel blogger and adventurer "),
+    //    CARD_INFO_SET(&img_multilang_avatar_28, "Samantha Rodriguez", "Music lover, constantly discovering new artists"),
     CARD_INFO_SET(NULL, NULL, NULL),
 };
 
@@ -130,7 +130,6 @@ static const void * get_imgfont_path(const lv_font_t * font,
     LV_IMG_DECLARE(img_emoji_movie_camera);
     LV_IMG_DECLARE(img_emoji_red_heart);
     LV_IMG_DECLARE(img_emoji_soccer_ball);
-    LV_IMG_DECLARE(img_emoji_woman_in_lotus_position);
     LV_IMG_DECLARE(img_emoji_rocket);
 
     *offset_y = -1;
@@ -155,8 +154,6 @@ static const void * get_imgfont_path(const lv_font_t * font,
             return &img_emoji_books;
         case 0x1F4F8:
             return &img_emoji_camera_with_flash;
-        case 0x1F9D8:
-            return &img_emoji_woman_in_lotus_position;
         case 0x1F3A8:
             return &img_emoji_artist_palette;
         case 0x1F680:
