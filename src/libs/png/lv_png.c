@@ -27,7 +27,7 @@
 static lv_res_t decoder_info(struct _lv_img_decoder_t * decoder, const void * src, lv_img_header_t * header);
 static lv_res_t decoder_open(lv_img_decoder_t * dec, lv_img_decoder_dsc_t * dsc);
 static void decoder_close(lv_img_decoder_t * dec, lv_img_decoder_dsc_t * dsc);
-static void convert_color_depth(uint8_t ** img_p, uint32_t px_cnt);
+static void convert_color_depth(uint8_t * img_p, uint32_t px_cnt);
 
 /**********************
  *  STATIC VARIABLES
@@ -185,7 +185,7 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder, lv_img_decoder_dsc_t * 
             }
 
             /*Convert the image to the system's color depth*/
-            convert_color_depth(&img_data,  png_width * png_height);
+            convert_color_depth(img_data,  png_width * png_height);
             dsc->img_data = img_data;
             return LV_RES_OK;     /*The image is fully decoded. Return with its pointer*/
         }
@@ -207,7 +207,7 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder, lv_img_decoder_dsc_t * 
         }
 
         /*Convert the image to the system's color depth*/
-        convert_color_depth(&img_data,  png_width * png_height);
+        convert_color_depth(img_data,  png_width * png_height);
 
         dsc->img_data = img_data;
         return LV_RES_OK;     /*Return with its pointer*/
@@ -233,18 +233,14 @@ static void decoder_close(lv_img_decoder_t * decoder, lv_img_decoder_dsc_t * dsc
  * @param img the ARGB888 image
  * @param px_cnt number of pixels in `img`
  */
-static void convert_color_depth(uint8_t ** img_p, uint32_t px_cnt)
+static void convert_color_depth(uint8_t * img_p, uint32_t px_cnt)
 {
-    uint8_t * img = *img_p;
-
-    lv_color32_t * img_argb = (lv_color32_t *)img;
-    lv_color_t c;
-    lv_color_t * img_c = (lv_color_t *)img;
+    lv_color32_t * img_argb = (lv_color32_t *)img_p;
     uint32_t i;
     for(i = 0; i < px_cnt; i++) {
-        c = lv_color_make(img_argb[i].red, img_argb[i].green, img_argb[i].blue);
-        img_c[i].red = c.blue;
-        img_c[i].blue = c.red;
+        uint8_t blue = img_argb[i].blue;
+        img_argb[i].blue = img_argb[i].red;
+        img_argb[i].red = blue;
     }
 }
 

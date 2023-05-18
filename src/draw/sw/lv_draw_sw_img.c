@@ -143,11 +143,7 @@ void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw
 LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw_dsc,
                                           const lv_area_t * coords)
 {
-    const lv_img_dsc_t * img_dsc = draw_dsc->src;
-    const uint8_t * src_buf = img_dsc->data;
 
-    lv_color_format_t cf = img_dsc->header.cf;
-    lv_draw_img_sup_t sup;
 
     lv_area_t transformed_area;
     lv_area_copy(&transformed_area, coords);
@@ -174,6 +170,13 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
 
     bool transformed = draw_dsc->angle != 0 || draw_dsc->zoom != LV_ZOOM_NONE ? true : false;
 
+    lv_img_decoder_dsc_t decoder_dsc;
+    lv_img_decoder_open(&decoder_dsc, draw_dsc->src, draw_dsc->recolor, -1);
+    const uint8_t * src_buf = decoder_dsc.img_data;
+
+    lv_color_format_t cf = decoder_dsc.header.cf;
+
+
     lv_draw_sw_blend_dsc_t blend_dsc;
 
     lv_memzero(&blend_dsc, sizeof(lv_draw_sw_blend_dsc_t));
@@ -193,7 +196,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
         blend_dsc.mask_buf = (lv_opa_t *)src_buf;
         blend_dsc.mask_area = coords;
         blend_dsc.src_buf = NULL;
-        blend_dsc.color = sup.alpha_color;
+        blend_dsc.color = draw_dsc->recolor;
         blend_dsc.mask_res = LV_DRAW_SW_MASK_RES_CHANGED;
 
         blend_dsc.blend_area = coords;
@@ -257,6 +260,14 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
             lv_color_buf_fill(rgb_buf, draw_dsc->recolor, buf_size);
         }
 
+
+        lv_draw_img_sup_t sup;
+        sup.alpha_color = draw_dsc->recolor;
+        sup.palette = decoder_dsc.palette;
+        sup.palette_size = decoder_dsc.palette_size;
+        sup.chroma_keyed = cf == LV_COLOR_FORMAT_NATIVE_CHROMA_KEYED ? true : false;
+        sup.chroma_key_color = LV_COLOR_CHROMA_KEY;
+
         while(blend_area.y1 <= y_last) {
             /*Apply transformations if any or separate the channels*/
             lv_area_t transform_area;
@@ -296,6 +307,8 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
         lv_free(rgb_buf);
     }
     draw_unit->clip_area = clip_area_ori;
+
+    lv_img_decoder_close(&decoder_dsc);
 }
 
 /**********************
