@@ -69,6 +69,7 @@ void lv_draw_rect(lv_layer_t * layer, const lv_draw_rect_dsc_t * dsc, const lv_a
         return;
     }
 
+    LV_PROFILER_BEGIN;
     lv_draw_task_t * t = lv_draw_add_task(layer, coords);
 
     t->draw_dsc = lv_malloc(sizeof(*dsc));
@@ -76,6 +77,10 @@ void lv_draw_rect(lv_layer_t * layer, const lv_draw_rect_dsc_t * dsc, const lv_a
     t->type = LV_DRAW_TASK_TYPE_RECTANGLE;
 
     lv_draw_finalize_task_creation(layer, t);
+
+    LV_ASSERT_MEM_INTEGRITY();
+
+    LV_PROFILER_END;
 }
 
 /**********************

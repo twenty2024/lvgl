@@ -72,6 +72,7 @@ void lv_draw_img(lv_layer_t * layer, const lv_draw_img_dsc_t * dsc, const lv_are
     }
     if(dsc->opa <= LV_OPA_MIN) return;
 
+    LV_PROFILER_BEGIN;
     lv_draw_task_t * t = lv_draw_add_task(layer, coords);
 
     t->draw_dsc = lv_malloc(sizeof(*dsc));
@@ -79,6 +80,7 @@ void lv_draw_img(lv_layer_t * layer, const lv_draw_img_dsc_t * dsc, const lv_are
     t->type = LV_DRAW_TASK_TYPE_IMAGE;
 
     lv_draw_finalize_task_creation(layer, t);
+    LV_PROFILER_END;
 }
 
 /**

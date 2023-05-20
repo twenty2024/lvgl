@@ -340,6 +340,7 @@ static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc, 
 {
     lv_font_glyph_dsc_t g;
 
+    LV_PROFILER_BEGIN;
     bool g_ret = lv_font_get_glyph_dsc(font, &g, letter, '\0');
     if(g_ret == false) {
         /*Add warning if the dsc is not found
@@ -349,11 +350,15 @@ static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc, 
            letter != 0x200c) { /*ZERO WIDTH NON-JOINER*/
             LV_LOG_WARN("lv_draw_letter: glyph dsc. not found for U+%" LV_PRIX32, letter);
         }
+        LV_PROFILER_END;
         return;
     }
 
     /*Don't draw anything if the character is empty. E.g. space*/
-    if((g.box_h == 0) || (g.box_w == 0)) return;
+    if((g.box_h == 0) || (g.box_w == 0)) {
+        LV_PROFILER_END;
+        return;
+    }
 
     lv_area_t letter_coords;
     letter_coords.x1 = pos->x + g.ofs_x;
@@ -362,7 +367,10 @@ static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc, 
     letter_coords.y2 = letter_coords.y1 + g.box_h - 1;
 
     /*If the letter is completely out of mask don't draw it*/
-    if(_lv_area_is_out(&letter_coords, draw_unit->clip_area, 0)) return;
+    if(_lv_area_is_out(&letter_coords, draw_unit->clip_area, 0)) {
+        LV_PROFILER_END;
+        return;
+    }
 
     uint32_t bitmap_size = g.box_w * g.box_h;
     if(dsc->_bitmap_buf_size < bitmap_size) {
@@ -376,5 +384,6 @@ static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc, 
     else dsc->format = LV_DRAW_LETTER_BITMAP_FORMAT_A8;
 
     cb(draw_unit, dsc);
+    LV_PROFILER_END;
 }
 

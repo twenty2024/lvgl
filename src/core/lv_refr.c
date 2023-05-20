@@ -14,6 +14,7 @@
 #include "../misc/lv_timer.h"
 #include "../misc/lv_math.h"
 #include "../misc/lv_gc.h"
+#include "../misc/lv_profiler.h"
 #include "../draw/lv_draw.h"
 #include "../font/lv_font_fmt_txt.h"
 
@@ -250,6 +251,7 @@ lv_disp_t * _lv_refr_get_disp_refreshing(void)
  */
 void _lv_disp_refr_timer(lv_timer_t * tmr)
 {
+    LV_PROFILER_BEGIN;
     REFR_TRACE("begin");
 
     uint32_t start = lv_tick_get();
@@ -357,6 +359,7 @@ refr_finish:
     lv_disp_send_event(disp_refr, LV_EVENT_REFR_FINISH, NULL);
 
     REFR_TRACE("finished");
+    LV_PROFILER_END;
 }
 
 /**********************
@@ -406,6 +409,7 @@ static void lv_refr_join_area(void)
 static void refr_invalid_areas(void)
 {
     if(disp_refr->inv_p == 0) return;
+    LV_PROFILER_BEGIN;
 
     /*Find the last area which will be drawn*/
     int32_t i;
@@ -435,6 +439,7 @@ static void refr_invalid_areas(void)
     }
 
     disp_refr->rendering_in_progress = false;
+    LV_PROFILER_END;
 }
 
 /**
@@ -511,6 +516,8 @@ static void refr_area(const lv_area_t * area_p)
 
 static void refr_area_part(lv_layer_t * layer)
 {
+    disp_refr->refreshed_area = layer->clip_area;
+
     /* In single buffered mode wait here until the buffer is freed.
      * Else we would draw into the buffer while it's still being transferred to the display*/
     if(!lv_disp_is_double_buffered(disp_refr)) {
@@ -1036,7 +1043,7 @@ static void draw_buf_flush(lv_disp_t * disp)
             draw_buf_rotate(&layer->buf_area, layer->buf);
         }
         else {
-            call_flush_cb(disp, &layer->buf_area, layer->buf);
+            call_flush_cb(disp, &disp->refreshed_area, layer->buf);
         }
     }
     /*If there are 2 buffers swap them. With direct mode swap only on the last area*/
@@ -1052,6 +1059,7 @@ static void draw_buf_flush(lv_disp_t * disp)
 
 static void call_flush_cb(lv_disp_t * disp, const lv_area_t * area, lv_color_t * color_p)
 {
+    LV_PROFILER_BEGIN;
     REFR_TRACE("Calling flush_cb on (%d;%d)(%d;%d) area with %p image pointer",
                (int)area->x1, (int)area->y1, (int)area->x2, (int)area->y2,
                (void *)color_p);
@@ -1066,4 +1074,5 @@ static void call_flush_cb(lv_disp_t * disp, const lv_area_t * area, lv_color_t *
     if(disp->layer_head->buffer_convert) disp->layer_head->buffer_convert(disp->layer_head);
 
     disp->flush_cb(disp, &offset_area, color_p);
+    LV_PROFILER_END;
 }

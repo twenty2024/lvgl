@@ -59,6 +59,7 @@ void lv_draw_init(void)
 
 lv_draw_task_t * lv_draw_add_task(lv_layer_t * layer, const lv_area_t * coords)
 {
+    LV_PROFILER_BEGIN;
     lv_draw_task_t * new_task = lv_malloc(sizeof(lv_draw_task_t));
     lv_memzero(new_task, sizeof(*new_task));
 
@@ -77,6 +78,7 @@ lv_draw_task_t * lv_draw_add_task(lv_layer_t * layer, const lv_area_t * coords)
         tail->next = new_task;
     }
 
+    LV_PROFILER_END;
     return new_task;
 }
 
@@ -103,6 +105,7 @@ void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t)
 
 void lv_draw_dispatch(void)
 {
+    LV_PROFILER_BEGIN;
     lv_disp_t * disp = _lv_refr_get_disp_refreshing();
     lv_layer_t * layer = disp->layer_head;
     while(layer) {
@@ -180,6 +183,7 @@ void lv_draw_dispatch(void)
         }
         layer = layer->next;
     }
+    LV_PROFILER_END;
 }
 
 void lv_draw_dispatch_wait_for_request(void)
@@ -203,6 +207,7 @@ void lv_draw_dispatch_request(void)
 
 lv_draw_task_t * lv_draw_get_next_available_task(lv_layer_t * layer, lv_draw_task_t * t_prev)
 {
+    LV_PROFILER_BEGIN;
     /*If the first task is screen sized, there cannot be independent areas*/
     if(layer->draw_task_head) {
         lv_coord_t hor_res = lv_disp_get_hor_res(_lv_refr_get_disp_refreshing());
@@ -211,6 +216,7 @@ lv_draw_task_t * lv_draw_get_next_available_task(lv_layer_t * layer, lv_draw_tas
         if(t->state != LV_DRAW_TASK_STATE_QUEUED &&
            t->area.x1 <= 0 && t->area.x2 >= hor_res - 1 &&
            t->area.y1 <= 0 && t->area.y2 >= ver_res - 1) {
+            LV_PROFILER_END;
             return NULL;
         }
     }
@@ -219,11 +225,13 @@ lv_draw_task_t * lv_draw_get_next_available_task(lv_layer_t * layer, lv_draw_tas
     while(t) {
         /*Find a queued and independent task*/
         if(t->state == LV_DRAW_TASK_STATE_QUEUED && is_independent(layer, t)) {
+            LV_PROFILER_END;
             return t;
         }
         t = t->next;
     }
 
+    LV_PROFILER_END;
     return NULL;
 }
 
@@ -255,6 +263,7 @@ lv_layer_t * lv_draw_layer_create(lv_layer_t * parent_layer, lv_color_format_t c
  */
 static bool is_independent(lv_layer_t * layer, lv_draw_task_t * t_check)
 {
+    LV_PROFILER_BEGIN;
     lv_draw_task_t * t = layer->draw_task_head;
 
     /*If t_check is outside of the older tasks then it's independent*/
@@ -262,11 +271,13 @@ static bool is_independent(lv_layer_t * layer, lv_draw_task_t * t_check)
         if(t->state != LV_DRAW_TASK_STATE_READY) {
             lv_area_t a;
             if(_lv_area_intersect(&a, &t->area, &t_check->area)) {
+                LV_PROFILER_END;
                 return false;
             }
         }
         t = t->next;
     }
+    LV_PROFILER_END;
 
     return true;
 }

@@ -17,6 +17,7 @@ extern "C" {
 
 #include "../misc/lv_style.h"
 #include "../misc/lv_txt.h"
+#include "../misc/lv_profiler.h"
 #include "lv_img_decoder.h"
 #include "lv_img_cache.h"
 
@@ -58,6 +59,9 @@ typedef struct _lv_draw_task_t {
      * The bounding box of the thing to draw
      */
     lv_area_t area;
+
+    /** The original area which is updated*/
+    lv_area_t clip_area_original;
 
     /**
      * The clip area of the layer is saved here when the draw task is created.

@@ -26,6 +26,11 @@ extern "C" {
 /**********************
  *      TYPEDEFS
  **********************/
+
+struct _lv_disp_t;
+
+typedef void (*lv_disp_flush_cb_t)(struct _lv_disp_t * disp, const lv_area_t * area, lv_color_t * px_map);
+
 struct _lv_disp_t {
 
     /*---------------------
@@ -70,7 +75,7 @@ struct _lv_disp_t {
 
     /** MANDATORY: Write the internal buffer (draw_buf) to the display. 'lv_disp_flush_ready()' has to be
      * called when finished*/
-    void (*flush_cb)(struct _lv_disp_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
+    lv_disp_flush_cb_t flush_cb;
 
     /*1: flushing is in progress. (It can't be a bit field because when it's cleared from IRQ Read-Modify-Write issue might occur)*/
     volatile int flushing;
@@ -95,7 +100,7 @@ struct _lv_disp_t {
     int32_t inv_en_cnt;
 
     /*---------------------
-     * Draw context
+     * Layer
      *--------------------*/
     lv_layer_t * layer_head;
     lv_layer_t * (*layer_init)(struct _lv_disp_t * disp);
@@ -106,7 +111,6 @@ struct _lv_disp_t {
     /*---------------------
      * Screens
      *--------------------*/
-
 
     /** Screens of the display*/
     struct _lv_obj_t ** screens;    /**< Array of screen objects.*/
@@ -152,6 +156,9 @@ struct _lv_disp_t {
     /** On CHROMA_KEYED images this color will be transparent.
      * `LV_COLOR_CHROMA_KEY` by default. (lv_conf.h) */
     lv_color_t color_chroma_key;
+
+    /** The area being refreshed*/
+    lv_area_t refreshed_area;
 };
 
 /**********************

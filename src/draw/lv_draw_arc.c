@@ -48,6 +48,7 @@ void lv_draw_arc(lv_layer_t * layer, const lv_draw_arc_dsc_t * dsc)
     if(dsc->width == 0) return;
     if(dsc->start_angle == dsc->end_angle) return;
 
+    LV_PROFILER_BEGIN;
     lv_area_t a;
     a.x1 = dsc->center.x - dsc->radius;
     a.y1 = dsc->center.y - dsc->radius;
@@ -59,18 +60,10 @@ void lv_draw_arc(lv_layer_t * layer, const lv_draw_arc_dsc_t * dsc)
     lv_memcpy(t->draw_dsc, dsc, sizeof(*dsc));
     t->type = LV_DRAW_TASK_TYPE_ARC;
 
-    lv_draw_dsc_base_t * base_dsc = t->draw_dsc;
-    base_dsc->layer = layer;
 
-    if(base_dsc->obj && lv_obj_has_flag(base_dsc->obj, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS)) {
-        /*Disable sending LV_EVENT_DRAW_TASK_ADDED first to avoid triggering recursive
-         *event calls due draw task adds in the event*/
-        lv_obj_clear_flag(base_dsc->obj, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS);
-        lv_obj_send_event(dsc->base.obj, LV_EVENT_DRAW_TASK_ADDED, t);
-        lv_obj_add_flag(base_dsc->obj, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS);
-    }
+    lv_draw_finalize_task_creation(layer, t);
 
-    lv_draw_dispatch();
+    LV_PROFILER_END;
 }
 
 void lv_draw_arc_get_area(lv_coord_t x, lv_coord_t y, uint16_t radius,  uint16_t start_angle, uint16_t end_angle,
