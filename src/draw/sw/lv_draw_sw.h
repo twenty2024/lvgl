@@ -13,10 +13,9 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
-#include "lv_draw_sw_blend.h"
+#include "../lv_draw.h"
 #if LV_USE_DRAW_SW
 
-#include "../lv_draw.h"
 #include "../../misc/lv_area.h"
 #include "../../misc/lv_color.h"
 #include "../../core/lv_disp.h"
@@ -80,6 +79,8 @@ void lv_draw_sw_transform(lv_draw_unit_t * draw_unit, const lv_area_t * dest_are
 /**********************
  *      MACROS
  **********************/
+
+#include "blend/lv_draw_sw_blend.h"
 
 #endif /*LV_USE_DRAW_SW*/
 

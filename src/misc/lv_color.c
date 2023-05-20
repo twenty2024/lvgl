@@ -71,6 +71,11 @@ bool lv_color_format_has_alpha(lv_color_format_t cf)
     }
 }
 
+uint16_t lv_color_to_u16(lv_color_t color)
+{
+    return ((color.red & 0xF8) << 8) + ((color.green & 0xFC) << 3) + ((color.blue & 0xF8) >> 5);
+}
+
 lv_color_t lv_color_lighten(lv_color_t c, lv_opa_t lvl)
 {
     return LV_COLOR_MIX(lv_color_white(), c, lvl);

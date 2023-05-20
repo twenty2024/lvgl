@@ -9,6 +9,7 @@
 #include "lv_draw_sw.h"
 #if LV_USE_DRAW_SW
 
+#include "blend/lv_draw_sw_blend.h"
 #include "../../misc/lv_math.h"
 #include "../../misc/lv_txt_ap.h"
 #include "../../core/lv_refr.h"

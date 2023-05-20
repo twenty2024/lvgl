@@ -102,6 +102,12 @@ typedef struct {
 #endif
 
 typedef struct {
+    uint16_t blue : 5;
+    uint16_t green : 6;
+    uint16_t red : 5;
+} lv_color16_t;
+
+typedef struct {
     uint8_t blue;
     uint8_t green;
     uint8_t red;
@@ -277,6 +283,8 @@ static inline lv_color_t lv_color_chroma_key(void)
     return LV_COLOR_CHROMA_KEY;
 }
 
+
+uint16_t lv_color_to_u16(lv_color_t color);
 
 lv_color_t lv_color_lighten(lv_color_t c, lv_opa_t lvl);
 
