@@ -115,16 +115,13 @@ typedef enum {
     /*Color formats in which LVGL can render*/
 #if LV_COLOR_DEPTH == 8
     LV_COLOR_FORMAT_NATIVE = LV_COLOR_FORMAT_L8,
-    LV_COLOR_FORMAT_NATIVE_CHROMA_KEYED = LV_COLOR_FORMAT_RGB565_CHROMA_KEYED,
 #elif LV_COLOR_DEPTH == 16
     LV_COLOR_FORMAT_NATIVE =  LV_COLOR_FORMAT_RGB565,
     LV_COLOR_FORMAT_NATIVE_CHROMA_KEYED = LV_COLOR_FORMAT_RGB565_CHROMA_KEYED,
 #elif LV_COLOR_DEPTH == 24
     LV_COLOR_FORMAT_NATIVE = LV_COLOR_FORMAT_RGB888,
-    LV_COLOR_FORMAT_NATIVE_CHROMA_KEYED = LV_COLOR_FORMAT_RGB888_CHROMA_KEYED,
 #elif LV_COLOR_DEPTH == 32
     LV_COLOR_FORMAT_NATIVE = LV_COLOR_FORMAT_XRGB8888,
-    LV_COLOR_FORMAT_NATIVE_CHROMA_KEYED = LV_COLOR_FORMAT_XRGB8888_CHROMA_KEYED,
 #endif
     /*Miscellaneous formats*/
     LV_COLOR_FORMAT_NATIVE_REVERSED = 0x1A,
@@ -215,6 +212,7 @@ static inline lv_color_t lv_color_chroma_key(void)
 
 
 uint16_t lv_color_to_u16(lv_color_t color);
+uint32_t lv_color_to_u32(lv_color_t color);
 
 lv_color_t lv_color_lighten(lv_color_t c, lv_opa_t lvl);
 

@@ -315,10 +315,11 @@ LV_ATTRIBUTE_FAST_MEM static void rgb565_image_blend(_lv_draw_sw_blend_image_dsc
             else {
                 if(opa >= LV_OPA_MAX) dest_buf[x] = lv_color_16_16_mix(res, dest_buf[x], mask_buf[x]);
                 else dest_buf[x] = lv_color_16_16_mix(res, dest_buf[x], (mask_buf[x] * opa) >> 8);
-
-                mask_buf += mask_stride;
             }
         }
+        dest_buf += dest_stride;
+        src_buf += src_stride;
+        if(mask_buf) mask_buf += mask_stride;
     }
 }
 
@@ -403,18 +404,20 @@ LV_ATTRIBUTE_FAST_MEM static void rgb888_image_blend(_lv_draw_sw_blend_image_dsc
                         res += (dest_buf_c16[dest_x].blue * (src_buf[src_x + 2] >> 3)) >> 5;
                         break;
                 }
-            }
 
-            if(mask_buf == NULL) {
-                lv_color_16_16_mix(res, dest_buf[dest_x], opa);
-            }
-            else {
-                if(opa >= LV_OPA_MAX) dest_buf[dest_x] = lv_color_16_16_mix(res, dest_buf[dest_x], mask_buf[dest_x]);
-                else dest_buf[dest_x] = lv_color_16_16_mix(res, dest_buf[dest_x], (mask_buf[dest_x] * opa) >> 8);
-
-                mask_buf += mask_stride;
+                if(mask_buf == NULL) {
+                    lv_color_16_16_mix(res, dest_buf[dest_x], opa);
+                }
+                else {
+                    if(opa >= LV_OPA_MAX) dest_buf[dest_x] = lv_color_16_16_mix(res, dest_buf[dest_x], mask_buf[dest_x]);
+                    else dest_buf[dest_x] = lv_color_16_16_mix(res, dest_buf[dest_x], (mask_buf[dest_x] * opa) >> 8);
+                }
             }
         }
+
+        dest_buf += dest_stride;
+        src_buf += src_stride;
+        if(mask_buf) mask_buf += mask_stride;
     }
 }
 
@@ -497,20 +500,22 @@ LV_ATTRIBUTE_FAST_MEM static void argb8888_image_blend(_lv_draw_sw_blend_image_d
                         res += (dest_buf_c16[dest_x].blue * (src_buf[src_x + 2] >> 3)) >> 5;
                         break;
                 }
+
+                if(mask_buf == NULL && opa >= LV_OPA_MAX) {
+                    lv_color_16_16_mix(res, dest_buf[dest_x], src_buf[src_x]);
+                }
+                else if(mask_buf == NULL && opa < LV_OPA_MAX) {
+                    lv_color_16_16_mix(res, dest_buf[dest_x], (opa * src_buf[src_x]) >> 8);
+                }
+                else {
+                    if(opa >= LV_OPA_MAX) dest_buf[dest_x] = lv_color_16_16_mix(res, dest_buf[dest_x], mask_buf[dest_x]);
+                    else dest_buf[dest_x] = lv_color_16_16_mix(res, dest_buf[dest_x], (mask_buf[dest_x] * opa) >> 8);
+                }
             }
 
-            if(mask_buf == NULL && opa >= LV_OPA_MAX) {
-                lv_color_16_16_mix(res, dest_buf[dest_x], src_buf[src_x]);
-            }
-            else if(mask_buf == NULL && opa < LV_OPA_MAX) {
-                lv_color_16_16_mix(res, dest_buf[dest_x], (opa * src_buf[src_x]) >> 8);
-            }
-            else {
-                if(opa >= LV_OPA_MAX) dest_buf[dest_x] = lv_color_16_16_mix(res, dest_buf[dest_x], mask_buf[dest_x]);
-                else dest_buf[dest_x] = lv_color_16_16_mix(res, dest_buf[dest_x], (mask_buf[dest_x] * opa) >> 8);
-
-                mask_buf += mask_stride;
-            }
+            dest_buf += dest_stride;
+            src_buf += src_stride;
+            if(mask_buf) mask_buf += mask_stride;
         }
     }
 }

@@ -86,6 +86,11 @@ uint16_t lv_color_to_u16(lv_color_t color)
     return ((color.red & 0xF8) << 8) + ((color.green & 0xFC) << 3) + ((color.blue & 0xF8) >> 3);
 }
 
+uint32_t lv_color_to_u32(lv_color_t color)
+{
+    return (uint32_t)((uint32_t)0xff << 24) + (color.red << 16) + (color.green << 8) + (color.blue);
+}
+
 lv_color_t lv_color_lighten(lv_color_t c, lv_opa_t lvl)
 {
 

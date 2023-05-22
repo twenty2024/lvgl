@@ -212,6 +212,12 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
         blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
         lv_draw_sw_blend(draw_unit, &blend_dsc);
     }
+    else if(!transformed && draw_dsc->recolor_opa == LV_OPA_TRANSP) {
+        blend_dsc.src_buf = src_buf;
+        blend_dsc.blend_area = coords;
+        blend_dsc.src_color_format = cf;
+        lv_draw_sw_blend(draw_unit, &blend_dsc);
+    }
     /*In the other cases every pixel need to be checked one-by-one*/
     else {
         //        lv_area_t blend_area;
