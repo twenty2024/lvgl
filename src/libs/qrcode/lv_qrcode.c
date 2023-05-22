@@ -104,8 +104,8 @@ lv_res_t lv_qrcode_update(lv_obj_t * obj, const void * data, uint32_t data_len)
         return LV_RES_INV;
     }
 
-    lv_canvas_set_palette(obj, 0, lv_color_to_xrgb8888(qrcode->dark_color));
-    lv_canvas_set_palette(obj, 1, lv_color_to_xrgb8888(qrcode->light_color));
+    lv_canvas_set_palette(obj, 0, lv_color_to_32(qrcode->dark_color, 0xff));
+    lv_canvas_set_palette(obj, 1, lv_color_to_32(qrcode->light_color, 0xff));
     lv_color_t c = lv_color_from_int(1);
     lv_canvas_fill_bg(obj, c, LV_OPA_COVER);
 

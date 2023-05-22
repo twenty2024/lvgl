@@ -79,29 +79,35 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_color_to_rgb565(_lv_draw_sw_blend_fi
     /*Simple fill*/
     if(mask == NULL && opa >= LV_OPA_MAX) {
         for(y = 0; y < h; y++) {
-            x = 0;
+            uint16_t * dest_end_final = dest_buf + w;
+            uint32_t * dest_end_mid = (uint32_t *)((uint16_t *) dest_buf + (w & ~(0xF)));
             if((lv_uintptr_t)&dest_buf[0] & 0x3) {
                 dest_buf[0] = color16;
-                x = 1;
+                dest_buf++;
             }
 
             uint32_t c32 = (uint32_t)color16 + ((uint32_t)color16 << 16);
-            uint32_t * dest32 = (uint32_t *)&dest_buf[x];
-            for(; x < w - 16; x += 16) {
-                dest32[x] = c32;
-                dest32[x] = c32;
-                dest32[x] = c32;
-                dest32[x] = c32;
-
-                dest32[x] = c32;
-                dest32[x] = c32;
-                dest32[x] = c32;
-                dest32[x] = c32;
+            uint32_t * dest32 = (uint32_t *)dest_buf;
+            while(dest32 < dest_end_mid) {
+                dest32[0] = c32;
+                dest32[1] = c32;
+                dest32[2] = c32;
+                dest32[3] = c32;
+                dest32[4] = c32;
+                dest32[5] = c32;
+                dest32[6] = c32;
+                dest32[7] = c32;
+                dest32 += 8;
             }
 
-            for(; x < w; x ++) {
-                dest_buf[x] = color16;
+            dest_buf = (uint16_t *)dest32;
+
+            while(dest_buf < dest_end_final) {
+                *dest_buf = color16;
+                dest_buf++;
             }
+
+            dest_buf += dest_stride - w;
         }
     }
     /*Opacity only*/
@@ -112,7 +118,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_color_to_rgb565(_lv_draw_sw_blend_fi
         for(y = 0; y < h; y++) {
             x = 0;
             if((lv_uintptr_t)&dest_buf[0] & 0x3) {
-                dest_buf[0] = lv_color_16_16_mix(color16, dest_buf[x], opa);
+                dest_buf[0] = lv_color_16_16_mix(color16, dest_buf[0], opa);
                 x = 1;
             }
 
@@ -159,10 +165,10 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_color_to_rgb565(_lv_draw_sw_blend_fi
                         dest_buf[x] = color16;
                         uint32_t * d32 = (uint32_t *)(&dest_buf[x + 1]);
                         *d32 = c32;
-                        dest_buf[3] = color16;
+                        dest_buf[x + 3] = color16;
                     }
                     else {
-                        uint32_t * dest32 = (uint32_t *)dest_buf;
+                        uint32_t * dest32 = (uint32_t *)&dest_buf[x];
                         dest32[0] = c32;
                         dest32[1] = c32;
                     }
@@ -188,6 +194,8 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_color_to_rgb565(_lv_draw_sw_blend_fi
             for(x = 0; x < w; x++) {
                 dest_buf[x] = lv_color_16_16_mix(color16, dest_buf[x], (mask[x] * opa) >> 8);
             }
+            dest_buf += dest_stride;
+            mask += mask_stride;
         }
     }
 }
@@ -517,8 +525,8 @@ LV_ATTRIBUTE_FAST_MEM static void argb8888_image_blend(_lv_draw_sw_blend_image_d
 LV_ATTRIBUTE_FAST_MEM static inline uint16_t lv_color_16_16_mix(uint16_t c1, uint16_t c2, uint8_t mix)
 {
 
-    if(mix == 255) return c2;
-    if(mix == 0) return c1;
+    if(mix == 255) return c1;
+    if(mix == 0) return c2;
 
     uint16_t ret;
 

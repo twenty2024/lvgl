@@ -349,9 +349,9 @@ LV_ATTRIBUTE_FAST_MEM void lv_gradient_color_calculate(const lv_grad_dsc_t * dsc
 
     LV_ASSERT(found_i != 0);
 
-    lv_color32_t one, two;
-    one = lv_color_to_xrgb8888(dsc->stops[found_i - 1].color);
-    two = lv_color_to_xrgb8888(dsc->stops[found_i].color);
+    lv_color_t one, two;
+    one = dsc->stops[found_i - 1].color;
+    two = dsc->stops[found_i].color;
     min = (dsc->stops[found_i - 1].frac * range) >> 8;
     max = (dsc->stops[found_i].frac * range) >> 8;
     d = max - min;

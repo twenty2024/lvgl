@@ -110,7 +110,9 @@ void lv_canvas_set_px(lv_obj_t * obj, lv_coord_t x, lv_coord_t y, lv_color_t col
     else if(canvas->dsc.header.cf == LV_COLOR_FORMAT_ARGB8888) {
         lv_color32_t * buf = (lv_color32_t *)canvas->dsc.data;
         buf += canvas->dsc.header.w * y + x;
-        *buf = lv_color_to_xrgb8888(color);
+        buf->red = color.red;
+        buf->green = color.green;
+        buf->blue = color.blue;
         buf->alpha = opa;
     }
     lv_obj_invalidate(obj);
@@ -134,11 +136,11 @@ void lv_canvas_get_px(lv_obj_t * obj, lv_coord_t x, lv_coord_t y, lv_color_t * c
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
 
-    lv_color_t alpha_color = lv_obj_get_style_img_recolor(obj, LV_PART_MAIN);
-    lv_canvas_t * canvas = (lv_canvas_t *)obj;
-    uint8_t px_size = lv_color_format_get_size(canvas->dsc.header.cf);
-    uint32_t px = canvas->dsc.header.w * y * px_size + x * px_size;
-    lv_color_buf_to_native((uint8_t *)canvas->dsc.data + px, canvas->dsc.header.cf, color, opa, alpha_color, 1);
+    //    lv_color_t alpha_color = lv_obj_get_style_img_recolor(obj, LV_PART_MAIN);
+    //    lv_canvas_t * canvas = (lv_canvas_t *)obj;
+    //    uint8_t px_size = lv_color_format_get_size(canvas->dsc.header.cf);
+    //    uint32_t px = canvas->dsc.header.w * y * px_size + x * px_size;
+    //    lv_color_buf_to_native((uint8_t *)canvas->dsc.data + px, canvas->dsc.header.cf, color, opa, alpha_color, 1);
 }
 
 lv_img_dsc_t * lv_canvas_get_img(lv_obj_t * obj)

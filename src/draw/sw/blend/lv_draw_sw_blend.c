@@ -46,7 +46,7 @@ void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv_draw_sw_blend_dsc_t *
     lv_layer_t * layer = draw_unit->target_layer;
 
 
-    if(blend_dsc->src_buf) {
+    if(blend_dsc->src_buf == NULL) {
         _lv_draw_sw_blend_fill_dsc_t fill_dsc;
         fill_dsc.dest_w = lv_area_get_width(&blend_area);
         fill_dsc.dest_h = lv_area_get_height(&blend_area);
@@ -69,7 +69,7 @@ void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv_draw_sw_blend_dsc_t *
                                  (blend_area.x1 - blend_dsc->mask_area->x1);
         }
         else {
-            fill_dsc.mask_stride = 0;
+            fill_dsc.mask_buf = NULL;
         }
 
         switch(layer->color_format) {
@@ -93,17 +93,23 @@ void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv_draw_sw_blend_dsc_t *
 
         image_dsc.src_buf = blend_dsc->src_buf;
         uint32_t src_px_size = lv_color_format_get_size(blend_dsc->src_color_format);
-        image_dsc.src_buf += blend_dsc->src_stride * (blend_area.y1 - blend_dsc->blend_area->y1) * src_px_size;
+        image_dsc.src_buf += image_dsc.src_stride * (blend_area.y1 - blend_dsc->blend_area->y1) * src_px_size;
         image_dsc.src_buf += (blend_area.x1 - blend_dsc->blend_area->x1) * src_px_size;
 
-        if(image_dsc.mask_buf) {
+        if(blend_dsc->mask_buf) {
+            image_dsc.mask_buf = blend_dsc->mask_buf;
             image_dsc.mask_stride = lv_area_get_width(blend_dsc->mask_area);
             image_dsc.mask_buf += image_dsc.mask_stride * (blend_area.y1 - blend_dsc->mask_area->y1) +
                                   (blend_area.x1 - blend_dsc->mask_area->x1);
         }
         else {
-            image_dsc.mask_stride = 0;
+            image_dsc.mask_buf = NULL;
         }
+
+        uint32_t px_size = lv_color_format_get_size(layer->color_format);
+        image_dsc.dest_buf += image_dsc.dest_stride * (blend_area.y1 - layer->buf_area.y1) * px_size;
+        image_dsc.dest_buf += (blend_area.x1 - layer->buf_area.x1) * px_size;
+
 
         switch(layer->color_format) {
             case LV_COLOR_FORMAT_RGB565:

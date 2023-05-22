@@ -25,7 +25,7 @@ typedef struct {
     SDL_Window * window;
     SDL_Renderer * renderer;
     SDL_Texture * texture;
-    lv_color_t * fb;
+    uint8_t * fb;
     uint8_t zoom;
     uint8_t ignore_size_chg;
 } lv_sdl_window_t;
@@ -33,7 +33,7 @@ typedef struct {
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void flush_cb(lv_disp_t * disp, const lv_area_t * area, lv_color_t * color_p);
+static void flush_cb(lv_disp_t * disp, const lv_area_t * area, uint8_t * color_p);
 static void window_create(lv_disp_t * disp);
 static void window_update(lv_disp_t * disp);
 static void clean_up(lv_disp_t * disp);
@@ -146,24 +146,26 @@ void lv_sdl_window_set_title(lv_disp_t * disp, const char * title)
  **********************/
 
 
-static void flush_cb(lv_disp_t * disp, const lv_area_t * area, lv_color_t * color_p)
+static void flush_cb(lv_disp_t * disp, const lv_area_t * area, uint8_t * px_map)
 {
-    LV_UNUSED(area);
-    LV_UNUSED(color_p);
 
 #if LV_SDL_PARTIAL_MODE
     int32_t y;
-    uint32_t w = lv_area_get_width(area);
     lv_sdl_window_t * dsc = lv_disp_get_driver_data(disp);
-    lv_coord_t hor_res = lv_disp_get_hor_res(disp);
-    lv_color_t * fb_tmp = dsc->fb;
-    fb_tmp += area->y1 * hor_res;
-    fb_tmp += area->x1;
+    uint8_t * fb_tmp = dsc->fb;
+    uint32_t px_size = lv_color_format_get_size(lv_disp_get_color_format(disp));
+    uint32_t px_map_stride = lv_area_get_width(area) * px_size;
+    lv_coord_t fb_stride = lv_disp_get_hor_res(disp) * px_size;
+    fb_tmp += area->y1 * fb_stride;
+    fb_tmp += area->x1 * px_size;
     for(y = area->y1; y <= area->y2; y++) {
-        lv_memcpy(fb_tmp, color_p, w * sizeof(lv_color_t));
-        color_p += w;
-        fb_tmp += hor_res;
+        lv_memcpy(fb_tmp, px_map, px_map_stride);
+        px_map += px_map_stride;
+        fb_tmp += fb_stride;
     }
+#else
+    LV_UNUSED(area);
+    LV_UNUSED(px_map);
 #endif
 
 
@@ -251,7 +253,8 @@ static void window_create(lv_disp_t * disp)
 
     dsc->renderer = SDL_CreateRenderer(dsc->window, -1, SDL_RENDERER_SOFTWARE);
     texture_resize(disp);
-    lv_memset(dsc->fb, 0xff, hor_res * ver_res * sizeof(lv_color_t));
+    uint32_t px_size = lv_color_format_get_size(lv_disp_get_color_format(disp));
+    lv_memset(dsc->fb, 0xff, hor_res * ver_res * px_size);
     /*Some platforms (e.g. Emscripten) seem to require setting the size again */
     SDL_SetWindowSize(dsc->window, hor_res * dsc->zoom, ver_res * dsc->zoom);
     texture_resize(disp);
@@ -261,8 +264,9 @@ static void window_update(lv_disp_t * disp)
 {
     lv_sdl_window_t * dsc = lv_disp_get_driver_data(disp);
     lv_coord_t hor_res = lv_disp_get_hor_res(disp);
+    uint32_t px_size = lv_color_format_get_size(lv_disp_get_color_format(disp));
+    SDL_UpdateTexture(dsc->texture, NULL, dsc->fb, hor_res * px_size);
 
-    SDL_UpdateTexture(dsc->texture, NULL, dsc->fb, hor_res * sizeof(lv_color_t));
     SDL_RenderClear(dsc->renderer);
 
     /*Update the renderer with the texture containing the rendered image*/
@@ -274,12 +278,13 @@ static void texture_resize(lv_disp_t * disp)
 {
     lv_coord_t hor_res = lv_disp_get_hor_res(disp);
     lv_coord_t ver_res = lv_disp_get_ver_res(disp);
+    uint32_t px_size = lv_color_format_get_size(lv_disp_get_color_format(disp));
     lv_sdl_window_t * dsc = lv_disp_get_driver_data(disp);
 
-    dsc->fb = (lv_color_t *)realloc(dsc->fb, sizeof(lv_color_t) * hor_res * ver_res);
+    dsc->fb = (lv_color_t *)realloc(dsc->fb, hor_res * ver_res * px_size);
 
 #if LV_SDL_PARTIAL_MODE == 0
-    lv_disp_set_draw_buffers(disp, dsc->fb, NULL, hor_res * ver_res * sizeof(lv_color_t), LV_DISP_RENDER_MODE_DIRECT);
+    lv_disp_set_draw_buffers(disp, dsc->fb, NULL, hor_res * ver_res * px_size, LV_DISP_RENDER_MODE_DIRECT);
 #endif
     if(dsc->texture) SDL_DestroyTexture(dsc->texture);
 

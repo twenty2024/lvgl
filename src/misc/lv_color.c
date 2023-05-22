@@ -71,13 +71,24 @@ bool lv_color_format_has_alpha(lv_color_format_t cf)
     }
 }
 
+lv_color32_t lv_color_to_32(lv_color_t color, lv_opa_t opa)
+{
+    lv_color32_t c32;
+    c32.red = color.red;
+    c32.green = color.green;
+    c32.blue = color.blue;
+    c32.alpha = opa;
+    return c32;
+}
+
 uint16_t lv_color_to_u16(lv_color_t color)
 {
-    return ((color.red & 0xF8) << 8) + ((color.green & 0xFC) << 3) + ((color.blue & 0xF8) >> 5);
+    return ((color.red & 0xF8) << 8) + ((color.green & 0xFC) << 3) + ((color.blue & 0xF8) >> 3);
 }
 
 lv_color_t lv_color_lighten(lv_color_t c, lv_opa_t lvl)
 {
+
     return LV_COLOR_MIX(lv_color_white(), c, lvl);
 }
 
@@ -209,9 +220,7 @@ lv_color_hsv_t lv_color_rgb_to_hsv(uint8_t r8, uint8_t g8, uint8_t b8)
  * @param color color
  * @return the given color in HSV
  */
-lv_color_hsv_t lv_color_to_hsv(lv_color_t color)
+lv_color_hsv_t lv_color_to_hsv(lv_color_t c)
 {
-    lv_color32_t color32;
-    color32 = lv_color_to_xrgb8888(color);
-    return lv_color_rgb_to_hsv(color32.red, color32.green, color32.blue);
+    return lv_color_rgb_to_hsv(c.red, c.green, c.blue);
 }

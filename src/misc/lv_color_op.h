@@ -59,30 +59,9 @@ LV_ATTRIBUTE_FAST_MEM static inline lv_color_t lv_color_mix(lv_color_t c1, lv_co
 {
     lv_color_t ret;
 
-#if LV_COLOR_DEPTH == 16 && LV_COLOR_MIX_ROUND_OFS == 0
-    /*Source: https://stackoverflow.com/a/50012418/1999969*/
-    uint16_t c1_16 = lv_color_to_int(c1);
-    uint16_t c2_16 = lv_color_to_int(c2);
-    mix = (uint32_t)((uint32_t)mix + 4) >> 3;
-
-    /*0x7E0F81F = 0b00000111111000001111100000011111*/
-    uint32_t bg = (uint32_t)(c2_16 | ((uint32_t)c2_16 << 16)) & 0x7E0F81F;
-    uint32_t fg = (uint32_t)(c1_16 | ((uint32_t)c1_16 << 16)) & 0x7E0F81F;
-    uint32_t result = ((((fg - bg) * mix) >> 5) + bg) & 0x7E0F81F;
-    ret = lv_color_from_int((uint16_t)((result >> 16) | result));
-#elif LV_COLOR_DEPTH == 8
-    LV_COLOR_SET_R(ret, LV_UDIV255((uint16_t)LV_COLOR_GET_R(c1) * mix + LV_COLOR_GET_R(c2) *
-                                   (255 - mix) + LV_COLOR_MIX_ROUND_OFS));
-#else
-    /*LV_COLOR_DEPTH == 8, 16 or 32*/
     ret.red = LV_UDIV255((uint16_t)c1.red * mix + c2.red * (255 - mix) + LV_COLOR_MIX_ROUND_OFS);
     ret.green = LV_UDIV255((uint16_t)c1.green * mix + c2.green * (255 - mix) + LV_COLOR_MIX_ROUND_OFS);
     ret.blue = LV_UDIV255((uint16_t)c1.blue * mix + c2.blue * (255 - mix) + LV_COLOR_MIX_ROUND_OFS);
-#if LV_COLOR_DEPTH == 32
-    ret.alpha = 0xff;
-#endif
-
-#endif
     return ret;
 }
 
@@ -188,46 +167,6 @@ LV_ATTRIBUTE_FAST_MEM static inline lv_color32_t lv_color_mix_with_alpha(lv_colo
     }
 }
 
-static inline lv_color32_t lv_color_to_xrgb8888(lv_color_t c)
-{
-#if LV_COLOR_DEPTH == 16
-    lv_color32_t ret;
-    ret.red = (c.red * 263 + 7) >> 5;
-    ret.green = (c.green * 259 + 3) >> 6;
-    ret.blue = (c.blue * 263 + 7) >> 5;
-    ret.alpha = 0xff;
-    return ret;
-#elif LV_COLOR_DEPTH == 24
-    lv_color_t ret;
-    ret.red = c.red;
-    ret.green = c.green;
-    ret.blue = c.blue;
-    ret.alpha = 0xff;
-    return ret;
-#elif LV_COLOR_DEPTH == 32
-    return *((lv_color32_t *)((void *)&c));
-#endif
-}
-
-static inline lv_color_t lv_color_from_xrgb8888(lv_color32_t c)
-{
-#if LV_COLOR_DEPTH == 16
-    lv_color_t ret;
-    ret.red = c.red >> 3;
-    ret.green = c.green >> 2;
-    ret.blue = c.blue >> 3;
-    return ret;
-#elif LV_COLOR_DEPTH == 24
-    lv_color_t ret;
-    ret.red = c.red;
-    ret.green = c.green;
-    ret.blue = c.blue;
-    ret.alpha = 0xff;
-    return ret;
-#elif LV_COLOR_DEPTH == 32
-    return *((lv_color_t *)((void *)&c));
-#endif
-}
 
 
 //! @endcond
@@ -237,11 +176,9 @@ static inline lv_color_t lv_color_from_xrgb8888(lv_color32_t c)
  * @param color a color
  * @return the brightness [0..255]
  */
-static inline uint8_t lv_color_brightness(lv_color_t color)
+static inline uint8_t lv_color_brightness(lv_color_t c)
 {
-    lv_color32_t c32;
-    c32 = lv_color_to_xrgb8888(color);
-    uint16_t bright = (uint16_t)(3u * c32.red + c32.green + 4u * c32.blue);
+    uint16_t bright = (uint16_t)(3u * c.red + c.green + 4u * c.blue);
     return (uint8_t)(bright >> 3);
 }
 

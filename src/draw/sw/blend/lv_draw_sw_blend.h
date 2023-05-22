@@ -63,7 +63,7 @@ typedef struct {
     lv_coord_t dest_stride;
     const lv_opa_t * mask_buf;
     lv_coord_t mask_stride;
-    const void * src_buf;
+    const uint8_t * src_buf;
     lv_coord_t src_stride;
     lv_color_format_t src_color_format;
     lv_opa_t opa;
