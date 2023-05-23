@@ -33,6 +33,8 @@ static bool is_independent(lv_layer_t * layer, lv_draw_task_t * t_check);
     static int dispatch_req = 0;
 #endif
 
+static uint32_t used_memory_for_layers_kb = 0;
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -85,7 +87,6 @@ lv_draw_task_t * lv_draw_add_task(lv_layer_t * layer, const lv_area_t * coords)
 
 void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t)
 {
-
     lv_draw_dsc_base_t * base_dsc = t->draw_dsc;
     base_dsc->layer = layer;
 
@@ -103,8 +104,6 @@ void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t)
         running = false;
     }
 }
-int free_cnt = 0;
-int malloced_layer_size = 0;
 
 void lv_draw_dispatch(void)
 {
@@ -127,6 +126,14 @@ void lv_draw_dispatch(void)
                     lv_draw_img_dsc_t * draw_img_dsc = t->draw_dsc;
                     lv_layer_t * layer_drawn = (lv_layer_t *)draw_img_dsc->src;
 
+                    if(layer_drawn->buf) {
+                        uint32_t layer_px_size = lv_color_format_get_size(layer_drawn->color_format);
+                        uint32_t layer_size_byte = lv_area_get_size(&layer_drawn->buf_area) * layer_px_size;
+                        used_memory_for_layers_kb -= layer_size_byte < 1024 ? 1 : layer_size_byte >> 10;
+                        printf("Layer memory used: %d kB\n", used_memory_for_layers_kb);
+                        lv_free(layer_drawn->buf);
+                    }
+
                     /*Remove the layer from  the display's*/
                     lv_layer_t * l2 = disp->layer_head;
                     while(l2) {
@@ -137,17 +144,6 @@ void lv_draw_dispatch(void)
                         l2 = l2->next;
                     }
 
-                    if(layer_drawn->buf) {
-                        uint32_t layer_size_byte = lv_area_get_size(&layer_drawn->buf_area) * lv_color_format_get_size(
-                                                       layer_drawn->color_format);
-                        printf("free: %d (-%d -> %d)\n", free_cnt, layer_size_byte, malloced_layer_size - layer_size_byte);
-                        if(malloced_layer_size - layer_size_byte < 0) {
-                            printf("????\n");
-                        }
-                        malloced_layer_size -= layer_size_byte;
-                        lv_free(layer_drawn->buf);
-                        free_cnt++;
-                    }
                     disp->layer_deinit(disp, layer_drawn);
                     lv_free(layer_drawn);
                 }
@@ -186,16 +182,28 @@ void lv_draw_dispatch(void)
         }
         /*Assign draw tasks to the draw_units*/
         else {
-            /*Find a draw unit which is not busy and can take at least one task*/
-            /*Let all draw units to pick draw tasks*/
-            lv_draw_unit_t * u = disp->draw_unit_head;
-            while(u) {
-                int32_t taken_cnt = u->dispatch(u, layer);
-                if(taken_cnt < 0) {
-                    break;
+            bool layer_ok = true;
+            if(layer->buf == NULL) {
+                uint32_t px_size = lv_color_format_get_size(layer->color_format);
+                uint32_t layer_size_byte = lv_area_get_size(&layer->buf_area) * px_size;
+                uint32_t kb = layer_size_byte < 1024 ? 1 : layer_size_byte >> 10;
+                if(used_memory_for_layers_kb + kb > LV_LAYER_MAX_MEMORY_USAGE) {
+                    layer_ok = false;
                 }
-                if(taken_cnt > 0) one_taken = true;
-                u = u->next;
+            }
+
+            if(layer_ok) {
+                /*Find a draw unit which is not busy and can take at least one task*/
+                /*Let all draw units to pick draw tasks*/
+                lv_draw_unit_t * u = disp->draw_unit_head;
+                while(u) {
+                    int32_t taken_cnt = u->dispatch(u, layer);
+                    if(taken_cnt < 0) {
+                        break;
+                    }
+                    if(taken_cnt > 0) one_taken = true;
+                    u = u->next;
+                }
             }
         }
         layer = layer->next;
@@ -271,6 +279,12 @@ lv_layer_t * lv_draw_layer_create(lv_layer_t * parent_layer, lv_color_format_t c
     new_layer->clip_area = *area;
 
     return new_layer;
+}
+
+void lv_draw_add_used_layer_size(uint32_t kb)
+{
+    used_memory_for_layers_kb += kb;
+    printf("Layer memory used: %d kB\n", used_memory_for_layers_kb);
 }
 
 /**********************

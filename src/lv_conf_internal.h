@@ -9,7 +9,6 @@
 /* clang-format off */
 
 #include <stdint.h>
-#include "misc/lv_types.h"
 
 /* Handle special Kconfig options */
 #ifndef LV_KCONFIG_IGNORE
@@ -398,6 +397,14 @@
      * it is buffered into a "simple" layer before rendering. The widget can be buffered in smaller chunks.
      * "Transformed layers" (if `transform_angle/zoom` are set) use larger buffers
      * and can't be drawn in chunks. */
+
+    #ifndef LV_LAYER_MAX_MEMORY_USAGE
+        #ifdef CONFIG_LV_LAYER_MAX_MEMORY_USAGE
+            #define LV_LAYER_MAX_MEMORY_USAGE CONFIG_LV_LAYER_MAX_MEMORY_USAGE
+        #else
+            #define  LV_LAYER_MAX_MEMORY_USAGE             150       /*[kB]*/
+        #endif
+    #endif
 
     /*The target buffer size for simple layer chunks.*/
     #ifndef LV_DRAW_SW_LAYER_SIMPLE_BUF_SIZE
@@ -857,12 +864,7 @@
  * OSAL
  *-----------*/
 
-/*Select an operating system to use. Possible values:
- *- LV_OS_NONE
- *- LV_OS_PTHREAD
- *- LV_OS_FREERTOS
- *- LV_OS_CMSIS_RTOS2
- *- LV_OS_CUSTOM*/
+/*Select an operating system to use*/
 #ifndef LV_USE_OS
     #ifdef CONFIG_LV_USE_OS
         #define LV_USE_OS CONFIG_LV_USE_OS

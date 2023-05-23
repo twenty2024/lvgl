@@ -119,7 +119,7 @@ static int32_t lv_draw_sw_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * laye
     t = layer->draw_task_head;
     while(t) {
         if(t->type == LV_DRAW_TASK_TYPE_LAYER && t->state == LV_DRAW_TASK_STATE_READY) {
-            printf("Prioritized layer draw\n");
+            LV_LOG_INFO("prioritizing layer draw");
             break;
         }
         t = t->next;
@@ -130,32 +130,17 @@ static int32_t lv_draw_sw_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * laye
 
     /*If the buffer of the layer is not allocated yet, allocate it now*/
     if(layer->buf == NULL) {
-        extern int free_cnt;
-        extern int malloced_layer_size;
-        static int cnt = 0;
-
-        uint32_t layer_size_byte = lv_area_get_size(&layer->buf_area) * lv_color_format_get_size(layer->color_format);
-
-        if(malloced_layer_size + layer_size_byte > 120000) {
-            printf("too many layers\n");
-            return -1;
-        }
-
-        if(cnt != free_cnt) {
-            printf("upps: %d\n", cnt);
-        }
-
-        malloced_layer_size += layer_size_byte;
-        printf("malloc: %d (+%d -> %d)\n", cnt, layer_size_byte, malloced_layer_size);
-        cnt++;
+        uint32_t px_size = lv_color_format_get_size(layer->color_format);
+        uint32_t layer_size_byte = lv_area_get_size(&layer->buf_area) * px_size;
 
         uint8_t * buf = lv_malloc(layer_size_byte);
         if(buf == NULL) {
-            malloced_layer_size -= layer_size_byte;
-            printf("malloc failed\n");
+            LV_LOG_WARN("Allocating %d bytes of layer buffer failed. Try later", layer_size_byte);
             return -1;
         }
         LV_ASSERT_MALLOC(buf);
+        lv_draw_add_used_layer_size(layer_size_byte < 1024 ? 1 : layer_size_byte >> 10);
+
         layer->buf = buf;
 
         if(lv_color_format_has_alpha(layer->color_format)) {

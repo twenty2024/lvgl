@@ -213,6 +213,25 @@ static inline lv_color_t lv_color_chroma_key(void)
 uint16_t lv_color_to_u16(lv_color_t color);
 uint32_t lv_color_to_u32(lv_color_t color);
 
+LV_ATTRIBUTE_FAST_MEM static inline uint16_t lv_color_16_16_mix(uint16_t c1, uint16_t c2, uint8_t mix)
+{
+    if(mix == 255) return c1;
+    if(mix == 0) return c2;
+
+    uint16_t ret;
+
+    /* Source: https://stackoverflow.com/a/50012418/1999969*/
+    mix = (uint32_t)((uint32_t)mix + 4) >> 3;
+
+    /*0x7E0F81F = 0b00000111111000001111100000011111*/
+    uint32_t bg = (uint32_t)(c2 | ((uint32_t)c2 << 16)) & 0x7E0F81F;
+    uint32_t fg = (uint32_t)(c1 | ((uint32_t)c1 << 16)) & 0x7E0F81F;
+    uint32_t result = ((((fg - bg) * mix) >> 5) + bg) & 0x7E0F81F;
+    ret = (uint16_t)(result >> 16) | result;
+
+    return ret;
+}
+
 lv_color_t lv_color_lighten(lv_color_t c, lv_opa_t lvl);
 
 lv_color_t lv_color_darken(lv_color_t c, lv_opa_t lvl);

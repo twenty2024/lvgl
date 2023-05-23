@@ -204,6 +204,13 @@ lv_draw_task_t * lv_draw_get_next_available_task(lv_layer_t * layer, lv_draw_tas
  */
 lv_layer_t * lv_draw_layer_create(lv_layer_t * parent_layer, lv_color_format_t color_format, const lv_area_t * area);
 
+
+/**
+ * Call to tell that a layer buffer with X kB size was allocated
+ * @param kb        size of the layer buffer in kB (if < 1024 use 1)
+ */
+void lv_draw_add_used_layer_size(uint32_t kb);
+
 /**********************
  *  GLOBAL VARIABLES
  **********************/

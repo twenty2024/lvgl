@@ -624,15 +624,14 @@ static void rgb565a8_aa(const uint8_t * src, lv_coord_t src_w, lv_coord_t src_h,
             else {
                 abuf[x] = 0xff;
             }
-
-            //            if(px_base == px_ver) && px_base == px_hor) {
-            cbuf[x] = px_base;
-            //            }
-            //            else {
-            //                lv_color_t v = lv_color_mix(px_ver, px_base, ys_fract);
-            //                lv_color_t h = lv_color_mix(px_hor, px_base, xs_fract);
-            //                cbuf[x] = lv_color_mix(h, v, LV_OPA_50);
-            //            }
+            if(px_base == px_ver && px_base == px_hor) {
+                cbuf[x] = px_base;
+            }
+            else {
+                uint16_t v = lv_color_16_16_mix(px_ver, px_base, ys_fract);
+                uint16_t h = lv_color_16_16_mix(px_hor, px_base, xs_fract);
+                cbuf[x] = lv_color_16_16_mix(h, v, LV_OPA_50);
+            }
         }
         /*Partially out of the image*/
         else {

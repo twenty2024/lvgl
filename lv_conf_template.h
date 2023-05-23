@@ -120,6 +120,8 @@
      * "Transformed layers" (if `transform_angle/zoom` are set) use larger buffers
      * and can't be drawn in chunks. */
 
+    #define  LV_LAYER_MAX_MEMORY_USAGE             150       /*[kB]*/
+
     /*The target buffer size for simple layer chunks.*/
     #define LV_DRAW_SW_LAYER_SIMPLE_BUF_SIZE          (24 * 1024)   /*[bytes]*/
 

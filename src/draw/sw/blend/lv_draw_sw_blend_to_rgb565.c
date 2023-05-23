@@ -33,8 +33,6 @@ LV_ATTRIBUTE_FAST_MEM static void rgb888_image_blend(_lv_draw_sw_blend_image_dsc
 
 LV_ATTRIBUTE_FAST_MEM static void argb8888_image_blend(_lv_draw_sw_blend_image_dsc_t * dsc);
 
-LV_ATTRIBUTE_FAST_MEM static inline uint16_t lv_color_16_16_mix(uint16_t c1, uint16_t c2, uint8_t mix);
-
 LV_ATTRIBUTE_FAST_MEM static inline uint16_t lv_color_24_16_mix(const uint8_t * c1, uint16_t c2, uint8_t mix);
 
 /**********************
@@ -519,32 +517,6 @@ LV_ATTRIBUTE_FAST_MEM static void argb8888_image_blend(_lv_draw_sw_blend_image_d
             if(mask_buf) mask_buf += mask_stride;
         }
     }
-}
-
-/**
- * Mix two 16 bit colors
- * @param c1    The color to mix to c2
- * @param c2    The background color
- * @param mix   0..255 (0: full c2, 255: full c1)
- * @return
- */
-LV_ATTRIBUTE_FAST_MEM static inline uint16_t lv_color_16_16_mix(uint16_t c1, uint16_t c2, uint8_t mix)
-{
-    if(mix == 255) return c1;
-    if(mix == 0) return c2;
-
-    uint16_t ret;
-
-    /* Source: https://stackoverflow.com/a/50012418/1999969*/
-    mix = (uint32_t)((uint32_t)mix + 4) >> 3;
-
-    /*0x7E0F81F = 0b00000111111000001111100000011111*/
-    uint32_t bg = (uint32_t)(c2 | ((uint32_t)c2 << 16)) & 0x7E0F81F;
-    uint32_t fg = (uint32_t)(c1 | ((uint32_t)c1 << 16)) & 0x7E0F81F;
-    uint32_t result = ((((fg - bg) * mix) >> 5) + bg) & 0x7E0F81F;
-    ret = (uint16_t)(result >> 16) | result;
-
-    return ret;
 }
 
 LV_ATTRIBUTE_FAST_MEM static inline uint16_t lv_color_24_16_mix(const uint8_t * c1, uint16_t c2, uint8_t mix)
