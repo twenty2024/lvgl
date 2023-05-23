@@ -8,6 +8,8 @@
  *********************/
 #include "../lv_draw_sw.h"
 #include "lv_draw_sw_blend_to_rgb565.h"
+#include "lv_draw_sw_blend_to_argb8888.h"
+#include "lv_draw_sw_blend_to_rgb888.h"
 
 #if LV_USE_DRAW_SW
 
@@ -79,6 +81,12 @@ void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv_draw_sw_blend_dsc_t *
             case LV_COLOR_FORMAT_ARGB8888:
                 lv_draw_sw_blend_color_to_argb8888(&fill_dsc);
                 break;
+            case LV_COLOR_FORMAT_RGB888:
+                lv_draw_sw_blend_color_to_rgb888(&fill_dsc, 3);
+                break;
+            case LV_COLOR_FORMAT_XRGB8888:
+                lv_draw_sw_blend_color_to_rgb888(&fill_dsc, 4);
+                break;
             default:
                 break;
         }
@@ -120,6 +128,12 @@ void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv_draw_sw_blend_dsc_t *
                 break;
             case LV_COLOR_FORMAT_ARGB8888:
                 lv_draw_sw_blend_image_to_argb8888(&image_dsc);
+                break;
+            case LV_COLOR_FORMAT_RGB888:
+                lv_draw_sw_blend_image_to_rgb888(&image_dsc, 3);
+                break;
+            case LV_COLOR_FORMAT_XRGB8888:
+                lv_draw_sw_blend_image_to_rgb888(&image_dsc, 4);
                 break;
             default:
                 break;

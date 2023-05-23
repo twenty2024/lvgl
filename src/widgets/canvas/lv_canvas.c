@@ -35,8 +35,7 @@ static void deinit_fake_disp(lv_obj_t * canvas, lv_layer_t * layer);
 
 void lv_draw_sw_transform(lv_draw_unit_t * draw_unit, const lv_area_t * dest_area, const void * src_buf,
                           lv_coord_t src_w, lv_coord_t src_h, lv_coord_t src_stride,
-                          const lv_draw_img_dsc_t * draw_dsc, const lv_draw_img_sup_t * sup, lv_color_format_t cf, lv_color_t * cbuf,
-                          lv_opa_t * abuf);
+                          const lv_draw_img_dsc_t * draw_dsc, const lv_draw_img_sup_t * sup, lv_color_format_t cf, uint8_t * dest_buf);
 
 /**********************
  *  STATIC VARIABLES
@@ -214,7 +213,7 @@ void lv_canvas_transform(lv_obj_t * obj, lv_img_dsc_t * src_img, int16_t angle, 
     for(y = 0; y < dest_img->header.h; y++) {
         if(y + offset_y >= 0) {
             lv_draw_sw_transform(NULL, &dest_area, src_img->data, src_img->header.w, src_img->header.h, src_img->header.w,
-                                 &draw_dsc, &sup, canvas->dsc.header.cf, cbuf, abuf);
+                                 &draw_dsc, &sup, canvas->dsc.header.cf, cbuf);
 
             for(x = 0; x < dest_img->header.w; x++) {
                 if(abuf[x]) {

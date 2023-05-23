@@ -32,7 +32,7 @@ extern "C" {
 
 LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_color_to_argb8888(_lv_draw_sw_blend_fill_dsc_t * dsc);
 
-LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_image_to_argb888(_lv_draw_sw_blend_image_dsc_t * dsc);
+LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_image_to_argb8888(_lv_draw_sw_blend_image_dsc_t * dsc);
 
 /**********************
  *      MACROS

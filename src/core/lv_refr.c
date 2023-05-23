@@ -305,12 +305,6 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         goto refr_finish;
     }
 
-    if(disp_refr->render_mode == LV_DISP_RENDER_MODE_DIRECT &&
-       disp_refr->color_format != LV_COLOR_FORMAT_NATIVE) {
-        LV_LOG_WARN("In direct_mode only LV_COLOR_FORMAT_NATIVE color format is supported");
-        goto refr_finish;
-    }
-
     lv_refr_join_area();
 
     refr_invalid_areas();
@@ -746,7 +740,8 @@ void refr_obj(lv_layer_t * layer, lv_obj_t * obj)
         uint32_t max_argb_row_height = lv_area_get_height(&layer_area_full);
         if(layer_type == LV_LAYER_TYPE_SIMPLE) {
             lv_coord_t w = lv_area_get_width(&layer_area_full);
-            max_rgb_row_height = LV_DRAW_SW_LAYER_SIMPLE_BUF_SIZE / w / sizeof(lv_color_t);
+            uint8_t px_size = lv_color_format_get_size(disp_refr->color_format);
+            max_rgb_row_height = LV_DRAW_SW_LAYER_SIMPLE_BUF_SIZE / w / px_size;
             max_argb_row_height = LV_DRAW_SW_LAYER_SIMPLE_BUF_SIZE / w / sizeof(lv_color32_t);
         }
 

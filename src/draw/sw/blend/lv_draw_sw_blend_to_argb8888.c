@@ -281,7 +281,7 @@ LV_ATTRIBUTE_FAST_MEM static void rgb888_image_blend(_lv_draw_sw_blend_image_dsc
     lv_color32_t * dest_buf_c32 = dsc->dest_buf;
     lv_coord_t dest_stride = dsc->dest_stride;
     const uint8_t * src_buf = dsc->src_buf;
-    lv_coord_t src_stride = dsc->src_stride;
+    lv_coord_t src_stride = dsc->src_stride * src_px_size;
     const lv_opa_t * mask_buf = dsc->mask_buf;
     lv_coord_t mask_stride = dsc->mask_stride;
 
@@ -476,9 +476,6 @@ LV_ATTRIBUTE_FAST_MEM static inline lv_color32_t lv_color_32_32_mix(lv_color32_t
     }
     /*Both colors have alpha. Expensive calculation need to be applied*/
     else {
-        return fg;
-        return lv_color_mix32(fg, bg);
-
         /*Save the parameters and the result. If they will be asked again don't compute again*/
 
         /*Update the ratio and the result alpha value if the input alpha values change*/

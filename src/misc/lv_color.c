@@ -47,6 +47,7 @@ uint8_t lv_color_format_get_size(lv_color_format_t cf)
             return 2;
 
         case LV_COLOR_FORMAT_RGB565A8:
+        case LV_COLOR_FORMAT_RGB888:
             return 3;
         case LV_COLOR_FORMAT_ARGB8888:
         case LV_COLOR_FORMAT_XRGB8888:

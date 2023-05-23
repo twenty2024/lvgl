@@ -21,7 +21,7 @@
 /*********************
  *      DEFINES
  *********************/
-#define MAX_BUF_SIZE (uint32_t) lv_disp_get_hor_res(_lv_refr_get_disp_refreshing())
+#define MAX_BUF_SIZE (uint32_t) 4 * lv_disp_get_hor_res(_lv_refr_get_disp_refreshing())
 
 /**********************
  *      TYPEDEFS
@@ -181,13 +181,8 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
     blend_dsc.opa = draw_dsc->opa;
     blend_dsc.blend_mode = draw_dsc->blend_mode;
 
-    /*The simplest case just copy the pixels into the draw_buf*/
-    if(!transformed && cf == LV_COLOR_FORMAT_NATIVE && draw_dsc->recolor_opa == LV_OPA_TRANSP) {
-        blend_dsc.src_buf = (const lv_color_t *)src_buf;
-        blend_dsc.blend_area = coords;
-        lv_draw_sw_blend(draw_unit, &blend_dsc);
-    }
-    else if(!transformed && cf == LV_COLOR_FORMAT_A8) {
+
+    if(!transformed && cf == LV_COLOR_FORMAT_A8) {
         lv_area_t clipped_coords;
         if(!_lv_area_intersect(&clipped_coords, coords, draw_unit->clip_area)) return;
 
@@ -212,6 +207,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
         blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
         lv_draw_sw_blend(draw_unit, &blend_dsc);
     }
+    /*The simplest case just copy the pixels into the draw_buf. Blending will convert the colors if needed*/
     else if(!transformed && draw_dsc->recolor_opa == LV_OPA_TRANSP) {
         blend_dsc.src_buf = src_buf;
         blend_dsc.blend_area = coords;
@@ -220,96 +216,77 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
     }
     /*In the other cases every pixel need to be checked one-by-one*/
     else {
-        //        lv_area_t blend_area;
-        //        blend_dsc.blend_area = &blend_area;
-        //        blend_area.x1 = draw_unit->clip_area->x1;
-        //        blend_area.x2 = draw_unit->clip_area->x2;
-        //        blend_area.y1 = draw_unit->clip_area->y1;
-        //        blend_area.y2 = draw_unit->clip_area->y2;
-        //
-        //        lv_coord_t src_w = lv_area_get_width(coords);
-        //        lv_coord_t src_h = lv_area_get_height(coords);
-        //        lv_coord_t blend_h = lv_area_get_height(&blend_area);
-        //        lv_coord_t blend_w = lv_area_get_width(&blend_area);
-        //
-        //        uint32_t max_buf_size = MAX_BUF_SIZE;
-        //        uint32_t blend_size = lv_area_get_size(&blend_area);
-        //        uint32_t buf_h;
-        //        uint32_t buf_w = blend_w;
-        //        if(blend_size <= max_buf_size) {
-        //            buf_h = blend_h;
-        //        }
-        //        else {
-        //            /*Round to full lines*/
-        //            buf_h = max_buf_size / blend_w;
-        //        }
-        //
-        //        /*Create buffers and masks*/
-        //        uint32_t buf_size = buf_w * buf_h;
-        //
-        //        lv_color_t * rgb_buf = lv_malloc(buf_size * sizeof(lv_color_t));
-        //        lv_opa_t * mask_buf = lv_malloc(buf_size);
-        //        blend_dsc.mask_buf = mask_buf;
-        //        blend_dsc.mask_area = &blend_area;
-        //        blend_dsc.mask_res = LV_DRAW_SW_MASK_RES_CHANGED;
-        //        blend_dsc.src_buf = rgb_buf;
-        //        lv_coord_t y_last = blend_area.y2;
-        //        blend_area.y2 = blend_area.y1 + buf_h - 1;
-        //
-        //        lv_draw_sw_mask_res_t mask_res_def = (cf != LV_COLOR_FORMAT_NATIVE || draw_dsc->angle ||
-        //                                              draw_dsc->zoom != LV_ZOOM_NONE) ?
-        //                                             LV_DRAW_SW_MASK_RES_CHANGED : LV_DRAW_SW_MASK_RES_FULL_COVER;
-        //        blend_dsc.mask_res = mask_res_def;
-        //
-        //        if(cf == LV_COLOR_FORMAT_A8) {
-        //            lv_color_buf_fill(rgb_buf, draw_dsc->recolor, buf_size);
-        //        }
-        //
-        //
-        //        lv_draw_img_sup_t sup;
-        //        sup.alpha_color = draw_dsc->recolor;
-        //        sup.palette = decoder_dsc.palette;
-        //        sup.palette_size = decoder_dsc.palette_size;
-        //        sup.chroma_keyed = cf == LV_COLOR_FORMAT_NATIVE_CHROMA_KEYED ? true : false;
-        //        sup.chroma_key_color = LV_COLOR_CHROMA_KEY;
-        //
-        //        while(blend_area.y1 <= y_last) {
-        //            /*Apply transformations if any or separate the channels*/
-        //            lv_area_t transform_area;
-        //            lv_area_copy(&transform_area, &blend_area);
-        //            lv_area_move(&transform_area, -coords->x1, -coords->y1);
-        //            if(transformed) {
-        //                lv_draw_sw_transform(draw_unit, &transform_area, src_buf, src_w, src_h, src_w,
-        //                                     draw_dsc, &sup, cf, rgb_buf, mask_buf);
-        //            }
-        //            else {
-        //                convert_cb(&transform_area, src_buf, src_w, src_h, src_w, &sup, cf, rgb_buf, mask_buf);
-        //            }
-        //
-        //            /*Apply recolor*/
-        //            if(draw_dsc->recolor_opa > LV_OPA_MIN) {
-        //                uint16_t premult_v[3];
-        //                lv_opa_t recolor_opa = draw_dsc->recolor_opa;
-        //                lv_color_t recolor = draw_dsc->recolor;
-        //                LV_COLOR_PREMULT(recolor, recolor_opa, premult_v);
-        //                recolor_opa = 255 - recolor_opa;
-        //                uint32_t i;
-        //                for(i = 0; i < buf_size; i++) {
-        //                    rgb_buf[i] = LV_COLOR_MIX_PREMULT(premult_v, rgb_buf[i], recolor_opa);
-        //                }
-        //            }
-        //
-        //            /*Blend*/
-        //            lv_draw_sw_blend(draw_unit, &blend_dsc);
-        //
-        //            /*Go the the next lines*/
-        //            blend_area.y1 = blend_area.y2 + 1;
-        //            blend_area.y2 = blend_area.y1 + buf_h - 1;
-        //            if(blend_area.y2 > y_last) blend_area.y2 = y_last;
-        //        }
-        //
-        //        lv_free(mask_buf);
-        //        lv_free(rgb_buf);
+        lv_area_t blend_area = draw_area;
+        blend_dsc.blend_area = &blend_area;
+
+        lv_coord_t src_w = lv_area_get_width(coords);
+        lv_coord_t src_h = lv_area_get_height(coords);
+        lv_coord_t blend_w = lv_area_get_width(&blend_area);
+        lv_coord_t blend_h = lv_area_get_height(&blend_area);
+
+        lv_color_format_t cf_transformed = cf;
+        if(cf == LV_COLOR_FORMAT_RGB888 || cf == LV_COLOR_FORMAT_XRGB8888) cf_transformed = LV_COLOR_FORMAT_ARGB8888;
+        uint32_t px_size = lv_color_format_get_size(cf_transformed);
+        uint32_t max_buf_size = MAX_BUF_SIZE / px_size;
+        uint32_t blend_size = lv_area_get_size(&blend_area);
+        uint32_t buf_w = blend_w;
+        uint32_t buf_h;
+        if(blend_size <= max_buf_size) buf_h = blend_h;
+        else buf_h = max_buf_size / blend_w;    /*Round to full lines*/
+
+        uint32_t buf_size = buf_w * buf_h;
+        uint8_t * tmp_buf = lv_malloc(buf_size * px_size);
+        blend_dsc.src_buf = tmp_buf;
+        blend_dsc.src_color_format = cf_transformed;
+        lv_coord_t y_last = blend_area.y2;
+        blend_area.y2 = blend_area.y1 + buf_h - 1;
+
+        lv_draw_sw_mask_res_t mask_res_def = (lv_color_format_has_alpha(cf_transformed) || draw_dsc->angle ||
+                                              draw_dsc->zoom != LV_ZOOM_NONE) ?
+                                             LV_DRAW_SW_MASK_RES_CHANGED : LV_DRAW_SW_MASK_RES_FULL_COVER;
+        blend_dsc.mask_res = mask_res_def;
+
+        lv_draw_img_sup_t sup;
+        sup.alpha_color = draw_dsc->recolor;
+        sup.palette = decoder_dsc.palette;
+        sup.palette_size = decoder_dsc.palette_size;
+        sup.chroma_keyed = cf_transformed == LV_COLOR_FORMAT_RGB565_CHROMA_KEYED ||
+                           LV_COLOR_FORMAT_RGB888_CHROMA_KEYED ? true : false;
+        sup.chroma_key_color = LV_COLOR_CHROMA_KEY;
+
+        while(blend_area.y1 <= y_last) {
+            /*Apply transformations if any or separate the channels*/
+            lv_area_t transform_area;
+            lv_area_copy(&transform_area, &blend_area);
+            lv_area_move(&transform_area, -coords->x1, -coords->y1);
+            if(transformed) {
+                lv_draw_sw_transform(draw_unit, &transform_area, src_buf, src_w, src_h, src_w,
+                                     draw_dsc, &sup, cf, tmp_buf);
+            }
+
+            //            /*Apply recolor*/
+            //            if(draw_dsc->recolor_opa > LV_OPA_MIN) {
+            //                uint16_t premult_v[3];
+            //                lv_opa_t recolor_opa = draw_dsc->recolor_opa;
+            //                lv_color_t recolor = draw_dsc->recolor;
+            //                LV_COLOR_PREMULT(recolor, recolor_opa, premult_v);
+            //                recolor_opa = 255 - recolor_opa;
+            //                uint32_t i;
+            //                for(i = 0; i < buf_size; i++) {
+            //                    rgb_buf[i] = LV_COLOR_MIX_PREMULT(premult_v, rgb_buf[i], recolor_opa);
+            //                }
+            //            }
+
+            /*Blend*/
+            lv_draw_sw_blend(draw_unit, &blend_dsc);
+
+            /*Go the the next lines*/
+            blend_area.y1 = blend_area.y2 + 1;
+            blend_area.y2 = blend_area.y1 + buf_h - 1;
+            if(blend_area.y2 > y_last) blend_area.y2 = y_last;
+        }
+
+        lv_free(tmp_buf);
     }
     draw_unit->clip_area = clip_area_ori;
 
