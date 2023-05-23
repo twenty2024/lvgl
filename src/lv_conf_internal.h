@@ -8,7 +8,7 @@
 #define LV_CONF_INTERNAL_H
 /* clang-format off */
 
-#include <stdint.h>
+#include "misc/lv_types.h"
 
 /* Handle special Kconfig options */
 #ifndef LV_KCONFIG_IGNORE
