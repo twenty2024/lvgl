@@ -115,12 +115,46 @@ static int32_t lv_draw_sw_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * laye
     if(draw_sw_unit->task_act) return 0;
 
     /*Try to get an ready to draw*/
-    lv_draw_task_t * t = lv_draw_get_next_available_task(layer, NULL);
+    lv_draw_task_t * t;
+    t = layer->draw_task_head;
+    while(t) {
+        if(t->type == LV_DRAW_TASK_TYPE_LAYER && t->state == LV_DRAW_TASK_STATE_READY) {
+            printf("Prioritized layer draw\n");
+            break;
+        }
+        t = t->next;
+    }
+
+    if(t == NULL) t = lv_draw_get_next_available_task(layer, NULL);
     if(t == NULL) return -1;
 
     /*If the buffer of the layer is not allocated yet, allocate it now*/
     if(layer->buf == NULL) {
-        uint8_t * buf = lv_malloc(lv_area_get_size(&layer->buf_area) * lv_color_format_get_size(layer->color_format));
+        extern int free_cnt;
+        extern int malloced_layer_size;
+        static int cnt = 0;
+
+        uint32_t layer_size_byte = lv_area_get_size(&layer->buf_area) * lv_color_format_get_size(layer->color_format);
+
+        if(malloced_layer_size + layer_size_byte > 100000) {
+            //printf("too many layers\n");
+            return -1;
+        }
+
+        if(cnt != free_cnt) {
+            printf("upps: %d\n", cnt);
+        }
+
+        malloced_layer_size += layer_size_byte;
+        printf("malloc: %d (+%d -> %d)\n", cnt, layer_size_byte, malloced_layer_size);
+        cnt++;
+
+        uint8_t * buf = lv_malloc(layer_size_byte);
+        if(buf == NULL) {
+            malloced_layer_size -= layer_size_byte;
+            printf("malloc failed\n");
+            return -1;
+        }
         LV_ASSERT_MALLOC(buf);
         layer->buf = buf;
 
@@ -143,8 +177,11 @@ static int32_t lv_draw_sw_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * laye
     draw_sw_unit->base_unit.clip_area = &t->clip_area;
     draw_sw_unit->task_act = t;
 
+    if(t->type == LV_DRAW_TASK_TYPE_LAYER) {
+        printf("start\n");
+    }
     exectue_drawing(draw_sw_unit);
-
+    if(t->type == LV_DRAW_TASK_TYPE_LAYER) printf("ready\n");
     draw_sw_unit->task_act->state = LV_DRAW_TASK_STATE_READY;
     draw_sw_unit->task_act = NULL;
 

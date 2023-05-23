@@ -94,7 +94,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_color_to_argb8888(_lv_draw_sw_blend_
         uint32_t color32 = lv_color_to_u32(dsc->color);
         uint32_t * dest_buf = dsc->dest_buf;
         for(y = 0; y < h; y++) {
-            for(x = 0; x <= w - 16; x += 16) {
+            for(x = 0; x < w - 16; x += 16) {
                 dest_buf[x + 0] = color32;
                 dest_buf[x + 1] = color32;
                 dest_buf[x + 2] = color32;

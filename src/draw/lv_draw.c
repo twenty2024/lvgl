@@ -85,6 +85,7 @@ lv_draw_task_t * lv_draw_add_task(lv_layer_t * layer, const lv_area_t * coords)
 
 void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t)
 {
+
     lv_draw_dsc_base_t * base_dsc = t->draw_dsc;
     base_dsc->layer = layer;
 
@@ -102,10 +103,13 @@ void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t)
         running = false;
     }
 }
+int free_cnt = 0;
+int malloced_layer_size = 0;
 
 void lv_draw_dispatch(void)
 {
     LV_PROFILER_BEGIN;
+    bool one_taken = false;
     lv_disp_t * disp = _lv_refr_get_disp_refreshing();
     lv_layer_t * layer = disp->layer_head;
     while(layer) {
@@ -115,8 +119,8 @@ void lv_draw_dispatch(void)
         while(t) {
             lv_draw_task_t * t_next = t->next;
             if(t->state == LV_DRAW_TASK_STATE_READY) {
-                if(t_prev) t_prev->next = t->next;
-                else layer->draw_task_head = t_next;
+                if(t_prev) t_prev->next = t->next;      /*Remove by it by assigning the next task to the previous*/
+                else layer->draw_task_head = t_next;    /*If it was the head, set the next as head*/
 
                 /*If it was layer drawing free the layer too*/
                 if(t->type == LV_DRAW_TASK_TYPE_LAYER) {
@@ -124,16 +128,21 @@ void lv_draw_dispatch(void)
                     lv_layer_t * layer_drawn = (lv_layer_t *)draw_img_dsc->src;
 
                     /*Remove the layer from  the display's*/
-                    lv_layer_t * c = disp->layer_head;
-                    while(c) {
-                        if(c->next == layer_drawn) {
-                            c->next = layer_drawn->next;
+                    lv_layer_t * l2 = disp->layer_head;
+                    while(l2) {
+                        if(l2->next == layer_drawn) {
+                            l2->next = layer_drawn->next;
                             break;
                         }
-                        c = c->next;
+                        l2 = l2->next;
                     }
 
+                    uint32_t layer_size_byte = lv_area_get_size(&layer_drawn->buf_area) * lv_color_format_get_size(
+                                                   layer_drawn->color_format);
+                    printf("free: %d (-%d -> %d)\n", free_cnt, layer_size_byte, malloced_layer_size - layer_size_byte);
+                    malloced_layer_size -= layer_size_byte;
                     lv_free(layer_drawn->buf);
+                    free_cnt++;
                     disp->layer_deinit(disp, layer_drawn);
                     lv_free(layer_drawn);
                 }
@@ -177,12 +186,20 @@ void lv_draw_dispatch(void)
             lv_draw_unit_t * u = disp->draw_unit_head;
             while(u) {
                 int32_t taken_cnt = u->dispatch(u, layer);
-                if(taken_cnt < 0) break;
+                if(taken_cnt < 0) {
+                    break;
+                }
+                if(taken_cnt > 0) one_taken = true;
                 u = u->next;
             }
         }
         layer = layer->next;
     }
+
+    if(!one_taken) {
+        lv_draw_dispatch_request();
+    }
+
     LV_PROFILER_END;
 }
 

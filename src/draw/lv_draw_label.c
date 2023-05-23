@@ -254,6 +254,7 @@ void lv_draw_label_interate_letters(lv_draw_unit_t * draw_unit, const lv_draw_la
         i = 0;
 #if LV_USE_BIDI
         char * bidi_txt = lv_malloc(line_end - line_start + 1);
+        LV_ASSERT_MALLOC(bidi_txt);
         _lv_bidi_process_paragraph(dsc->text + line_start, bidi_txt, line_end - line_start, base_dir, NULL, 0);
 #else
         const char * bidi_txt = dsc->text + line_start;
@@ -375,6 +376,7 @@ static void draw_letter(lv_draw_unit_t * draw_unit, lv_draw_letter_dsc_t * dsc, 
     uint32_t bitmap_size = g.box_w * g.box_h;
     if(dsc->_bitmap_buf_size < bitmap_size) {
         dsc->bitmap_buf = lv_realloc(dsc->bitmap_buf, bitmap_size);
+        LV_ASSERT_MALLOC(dsc->bitmap_buf);
         dsc->_bitmap_buf_size = bitmap_size;
     }
 
