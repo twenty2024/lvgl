@@ -137,12 +137,17 @@ void lv_draw_dispatch(void)
                         l2 = l2->next;
                     }
 
-                    uint32_t layer_size_byte = lv_area_get_size(&layer_drawn->buf_area) * lv_color_format_get_size(
-                                                   layer_drawn->color_format);
-                    printf("free: %d (-%d -> %d)\n", free_cnt, layer_size_byte, malloced_layer_size - layer_size_byte);
-                    malloced_layer_size -= layer_size_byte;
-                    lv_free(layer_drawn->buf);
-                    free_cnt++;
+                    if(layer_drawn->buf) {
+                        uint32_t layer_size_byte = lv_area_get_size(&layer_drawn->buf_area) * lv_color_format_get_size(
+                                                       layer_drawn->color_format);
+                        printf("free: %d (-%d -> %d)\n", free_cnt, layer_size_byte, malloced_layer_size - layer_size_byte);
+                        if(malloced_layer_size - layer_size_byte < 0) {
+                            printf("????\n");
+                        }
+                        malloced_layer_size -= layer_size_byte;
+                        lv_free(layer_drawn->buf);
+                        free_cnt++;
+                    }
                     disp->layer_deinit(disp, layer_drawn);
                     lv_free(layer_drawn);
                 }

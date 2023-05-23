@@ -124,6 +124,7 @@ void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv_draw_sw_blend_dsc_t *
 
         switch(layer->color_format) {
             case LV_COLOR_FORMAT_RGB565:
+            case LV_COLOR_FORMAT_RGB565A8:
                 lv_draw_sw_blend_image_to_rgb565(&image_dsc);
                 break;
             case LV_COLOR_FORMAT_ARGB8888:

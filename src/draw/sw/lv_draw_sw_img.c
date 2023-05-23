@@ -226,6 +226,7 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
 
         lv_color_format_t cf_transformed = cf;
         if(cf == LV_COLOR_FORMAT_RGB888 || cf == LV_COLOR_FORMAT_XRGB8888) cf_transformed = LV_COLOR_FORMAT_ARGB8888;
+        if(cf == LV_COLOR_FORMAT_RGB565) cf_transformed = LV_COLOR_FORMAT_RGB565A8;
         uint32_t px_size = lv_color_format_get_size(cf_transformed);
         uint32_t max_buf_size = MAX_BUF_SIZE / px_size;
         uint32_t blend_size = lv_area_get_size(&blend_area);
@@ -245,6 +246,12 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_img(lv_draw_unit_t * draw_unit, const lv_d
                                               draw_dsc->zoom != LV_ZOOM_NONE) ?
                                              LV_DRAW_SW_MASK_RES_CHANGED : LV_DRAW_SW_MASK_RES_FULL_COVER;
         blend_dsc.mask_res = mask_res_def;
+
+        if(cf_transformed == LV_COLOR_FORMAT_RGB565A8) {
+            blend_dsc.mask_buf =  tmp_buf + buf_w * buf_h * 2;
+            blend_dsc.mask_area = &blend_area;
+            blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
+        }
 
         lv_draw_img_sup_t sup;
         sup.alpha_color = draw_dsc->recolor;

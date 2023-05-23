@@ -136,8 +136,8 @@ static int32_t lv_draw_sw_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * laye
 
         uint32_t layer_size_byte = lv_area_get_size(&layer->buf_area) * lv_color_format_get_size(layer->color_format);
 
-        if(malloced_layer_size + layer_size_byte > 100000) {
-            //printf("too many layers\n");
+        if(malloced_layer_size + layer_size_byte > 120000) {
+            printf("too many layers\n");
             return -1;
         }
 

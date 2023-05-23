@@ -580,11 +580,6 @@ void lv_canvas_draw_line(lv_obj_t * canvas, const lv_draw_line_dsc_t * draw_dsc)
 
     lv_img_dsc_t * dsc = lv_canvas_get_img(canvas);
 
-    if(dsc->header.cf != LV_COLOR_FORMAT_NATIVE) {
-        LV_LOG_WARN("can draw only with LV_COLOR_FORMAT_NATIVE");
-        return;
-    }
-
     /*Create a dummy display to fool the lv_draw function.
      *It will think it draws to real screen.*/
     lv_area_t clip_area;
@@ -602,11 +597,6 @@ void lv_canvas_draw_triangle(lv_obj_t * canvas, const lv_draw_triangle_dsc_t * d
     LV_ASSERT_OBJ(canvas, MY_CLASS);
 
     lv_img_dsc_t * dsc = lv_canvas_get_img(canvas);
-
-    if(dsc->header.cf != LV_COLOR_FORMAT_NATIVE) {
-        LV_LOG_WARN("can draw only with LV_COLOR_FORMAT_NATIVE");
-        return;
-    }
 
     /*Create a dummy display to fool the lv_draw function.
      *It will think it draws to real screen.*/
@@ -626,11 +616,6 @@ void lv_canvas_draw_arc(lv_obj_t * canvas, const lv_draw_arc_dsc_t * draw_dsc)
     LV_ASSERT_OBJ(canvas, MY_CLASS);
 
     lv_img_dsc_t * dsc = lv_canvas_get_img(canvas);
-
-    if(dsc->header.cf != LV_COLOR_FORMAT_NATIVE) {
-        LV_LOG_WARN("can draw only with LV_COLOR_FORMAT_NATIVE");
-        return;
-    }
 
     /*Create a dummy display to fool the lv_draw function.
      *It will think it draws to real screen.*/
