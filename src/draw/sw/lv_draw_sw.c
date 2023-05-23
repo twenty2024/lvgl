@@ -114,7 +114,7 @@ static int32_t lv_draw_sw_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * laye
     /*Return immediately if it's busy with draw task*/
     if(draw_sw_unit->task_act) return 0;
 
-    /*Try to get an ready to draw*/
+    /*Try to get a ready to draw layer*/
     lv_draw_task_t * t;
     t = layer->draw_task_head;
     while(t) {
