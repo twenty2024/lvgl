@@ -98,7 +98,7 @@ void lv_draw_unit_sw_create(lv_disp_t * disp, uint32_t cnt)
 
 #if LV_USE_OS
         lv_thread_sync_init(&draw_sw_unit->sync);
-        lv_thread_init(&draw_sw_unit->thread, LV_THREAD_PRIO_MID, render_thread_cb, 8 * 1024, draw_sw_unit);
+        lv_thread_init(&draw_sw_unit->thread, LV_THREAD_PRIO_HIGH, render_thread_cb, 8 * 1024, draw_sw_unit);
 #endif
     }
 }
