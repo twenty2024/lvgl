@@ -130,7 +130,7 @@ void lv_draw_dispatch(void)
                         uint32_t layer_px_size = lv_color_format_get_size(layer_drawn->color_format);
                         uint32_t layer_size_byte = lv_area_get_size(&layer_drawn->buf_area) * layer_px_size;
                         used_memory_for_layers_kb -= layer_size_byte < 1024 ? 1 : layer_size_byte >> 10;
-                        printf("Layer memory used: %d kB\n", used_memory_for_layers_kb);
+                        LV_LOG_INFO("Layer memory used: %d kB\n", used_memory_for_layers_kb);
                         lv_free(layer_drawn->buf);
                     }
 
@@ -284,7 +284,7 @@ lv_layer_t * lv_draw_layer_create(lv_layer_t * parent_layer, lv_color_format_t c
 void lv_draw_add_used_layer_size(uint32_t kb)
 {
     used_memory_for_layers_kb += kb;
-    printf("Layer memory used: %d kB\n", used_memory_for_layers_kb);
+    LV_LOG_INFO("Layer memory used: %d kB\n", used_memory_for_layers_kb);
 }
 
 /**********************
