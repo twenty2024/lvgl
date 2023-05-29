@@ -2620,6 +2620,17 @@
             #define LV_SDL_FULLSCREEN      0
         #endif
     #endif
+    #ifndef LV_SDL_DIRECT_EXIT
+        #ifdef _LV_KCONFIG_PRESENT
+            #ifdef CONFIG_LV_SDL_DIRECT_EXIT
+                #define LV_SDL_DIRECT_EXIT CONFIG_LV_SDL_DIRECT_EXIT
+            #else
+                #define LV_SDL_DIRECT_EXIT 0
+            #endif
+        #else
+            #define LV_SDL_DIRECT_EXIT     1    /*1: Exit the application when all SDL widows are closed*/
+        #endif
+    #endif
 #endif
 
 /*Driver for /dev/fb*/
@@ -2637,6 +2648,15 @@
         #else
             #define LV_LINUX_FBDEV_BSD  0
         #endif
+    #endif
+#endif
+
+/*Driver for /dev/dri/card*/
+#ifndef LV_USE_LINUX_DRM
+    #ifdef CONFIG_LV_USE_LINUX_DRM
+        #define LV_USE_LINUX_DRM CONFIG_LV_USE_LINUX_DRM
+    #else
+        #define LV_USE_LINUX_DRM        0
     #endif
 #endif
 

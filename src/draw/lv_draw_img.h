@@ -43,8 +43,8 @@ typedef struct _lv_draw_img_dsc_t {
 
     const void * src;
 
-    int16_t angle;
-    uint16_t zoom;
+    lv_coord_t angle;
+    lv_coord_t zoom;
     lv_point_t pivot;
 
     lv_color_t chroma_key_color;

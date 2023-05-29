@@ -296,10 +296,9 @@ void lv_obj_update_layout(const lv_obj_t * obj)
     mutex = true;
 
     lv_obj_t * scr = lv_obj_get_screen(obj);
-
-    /*Repeat until there where layout invalidations*/
+    /*Repeat until there are no more layout invalidations*/
     while(scr->scr_layout_inv) {
-        LV_LOG_INFO("Layout update begin");
+        LV_LOG_TRACE("Layout update begin");
         scr->scr_layout_inv = 0;
         layout_update_core(scr);
         LV_LOG_TRACE("Layout update end");
@@ -912,10 +911,7 @@ void lv_obj_get_click_area(const lv_obj_t * obj, lv_area_t * area)
 {
     lv_area_copy(area, &obj->coords);
     if(obj->spec_attr) {
-        area->x1 -= obj->spec_attr->ext_click_pad;
-        area->x2 += obj->spec_attr->ext_click_pad;
-        area->y1 -= obj->spec_attr->ext_click_pad;
-        area->y2 += obj->spec_attr->ext_click_pad;
+        lv_area_increase(area, obj->spec_attr->ext_click_pad, obj->spec_attr->ext_click_pad);
     }
 }
 
@@ -1134,8 +1130,8 @@ static void layout_update_core(lv_obj_t * obj)
 
 static void transform_point(const lv_obj_t * obj, lv_point_t * p, bool inv)
 {
-    int16_t angle = lv_obj_get_style_transform_angle(obj, 0);
-    int16_t zoom = lv_obj_get_style_transform_zoom_safe(obj, 0);
+    lv_coord_t angle = lv_obj_get_style_transform_angle(obj, 0);
+    lv_coord_t zoom = lv_obj_get_style_transform_zoom_safe(obj, 0);
 
     if(angle == 0 && zoom == LV_ZOOM_NONE) return;
 

@@ -794,6 +794,7 @@
     #define LV_SDL_INCLUDE_PATH    <SDL2/SDL.h>
     #define LV_SDL_PARTIAL_MODE    0    /*Recommended only to emulate a setup with a display controller*/
     #define LV_SDL_FULLSCREEN      0
+    #define LV_SDL_DIRECT_EXIT     1    /*1: Exit the application when all SDL widows are closed*/
 #endif
 
 /*Driver for /dev/fb*/
@@ -801,6 +802,9 @@
 #if LV_USE_LINUX_FBDEV
     #define LV_LINUX_FBDEV_BSD  0
 #endif
+
+/*Driver for /dev/dri/card*/
+#define LV_USE_LINUX_DRM        0
 
 /*Interface for TFT_eSPI*/
 #define LV_USE_TFT_ESPI         0
