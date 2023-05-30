@@ -109,111 +109,124 @@ void lv_draw_dispatch(void)
 {
     LV_PROFILER_BEGIN;
     bool one_taken = false;
-    lv_disp_t * disp = _lv_refr_get_disp_refreshing();
-    lv_layer_t * layer = disp->layer_head;
-    while(layer) {
-        /*Remove the finished tasks first*/
-        lv_draw_task_t * t_prev = NULL;
-        lv_draw_task_t * t = layer->draw_task_head;
-        while(t) {
-            lv_draw_task_t * t_next = t->next;
-            if(t->state == LV_DRAW_TASK_STATE_READY) {
-                if(t_prev) t_prev->next = t->next;      /*Remove by it by assigning the next task to the previous*/
-                else layer->draw_task_head = t_next;    /*If it was the head, set the next as head*/
-
-                /*If it was layer drawing free the layer too*/
-                if(t->type == LV_DRAW_TASK_TYPE_LAYER) {
-                    lv_draw_img_dsc_t * draw_img_dsc = t->draw_dsc;
-                    lv_layer_t * layer_drawn = (lv_layer_t *)draw_img_dsc->src;
-
-                    if(layer_drawn->buf) {
-                        uint32_t layer_px_size = lv_color_format_get_size(layer_drawn->color_format);
-                        uint32_t layer_size_byte = lv_area_get_size(&layer_drawn->buf_area) * layer_px_size;
-                        used_memory_for_layers_kb -= layer_size_byte < 1024 ? 1 : layer_size_byte >> 10;
-                        LV_LOG_INFO("Layer memory used: %d kB\n", used_memory_for_layers_kb);
-                        lv_free(layer_drawn->buf);
-                    }
-
-                    /*Remove the layer from  the display's*/
-                    lv_layer_t * l2 = disp->layer_head;
-                    while(l2) {
-                        if(l2->next == layer_drawn) {
-                            l2->next = layer_drawn->next;
-                            break;
-                        }
-                        l2 = l2->next;
-                    }
-
-                    disp->layer_deinit(disp, layer_drawn);
-                    lv_free(layer_drawn);
-                }
-                if(t->type == LV_DRAW_TASK_TYPE_LABEL) {
-                    lv_draw_label_dsc_t * draw_label_dsc = t->draw_dsc;
-                    if(draw_label_dsc->text_local) {
-                        lv_free((void *)draw_label_dsc->text);
-                        draw_label_dsc->text = NULL;
-                    }
-                }
-
-                lv_free(t->draw_dsc);
-                lv_free(t);
-            }
-            else {
-                t_prev = t;
-            }
-            t = t_next;
+    lv_disp_t * disp = lv_disp_get_next(NULL);
+    while(disp) {
+        lv_layer_t * layer = disp->layer_head;
+        while(layer) {
+            bool ret = lv_draw_dispatch_layer(disp, layer);
+            if(ret) one_taken = true;
+            layer = layer->next;
         }
 
-        /*This layer is ready, enable blending its buffer*/
-        if(layer->parent && layer->all_tasks_added && layer->draw_task_head == NULL) {
-            /*Find a draw task with TYPE_LAYER in the layer where the src is this layer*/
-            lv_draw_task_t * t_src = layer->parent->draw_task_head;
-            while(t_src) {
-                if(t_src->type == LV_DRAW_TASK_TYPE_LAYER && t_src->state == LV_DRAW_TASK_STATE_WAITING) {
-                    lv_draw_img_dsc_t * draw_dsc = t_src->draw_dsc;
-                    if(draw_dsc->src == layer) {
-                        t_src->state = LV_DRAW_TASK_STATE_QUEUED;
-                        lv_draw_dispatch_request();
-                        break;
-                    }
-                }
-                t_src = t_src->next;
-            }
+        if(!one_taken) {
+            lv_draw_dispatch_request();
         }
-        /*Assign draw tasks to the draw_units*/
-        else {
-            bool layer_ok = true;
-            if(layer->buf == NULL) {
-                uint32_t px_size = lv_color_format_get_size(layer->color_format);
-                uint32_t layer_size_byte = lv_area_get_size(&layer->buf_area) * px_size;
-                uint32_t kb = layer_size_byte < 1024 ? 1 : layer_size_byte >> 10;
-                if(used_memory_for_layers_kb + kb > LV_LAYER_MAX_MEMORY_USAGE) {
-                    layer_ok = false;
-                }
-            }
-
-            if(layer_ok) {
-                /*Find a draw unit which is not busy and can take at least one task*/
-                /*Let all draw units to pick draw tasks*/
-                lv_draw_unit_t * u = disp->draw_unit_head;
-                while(u) {
-                    int32_t taken_cnt = u->dispatch(u, layer);
-                    if(taken_cnt < 0) {
-                        break;
-                    }
-                    if(taken_cnt > 0) one_taken = true;
-                    u = u->next;
-                }
-            }
-        }
-        layer = layer->next;
+        disp = lv_disp_get_next(disp);
     }
-
-    if(!one_taken) {
-        lv_draw_dispatch_request();
-    }
-
     LV_PROFILER_END;
+}
+
+bool lv_draw_dispatch_layer(struct _lv_disp_t * disp, lv_layer_t * layer)
+{
+    /*Remove the finished tasks first*/
+    lv_draw_task_t * t_prev = NULL;
+    lv_draw_task_t * t = layer->draw_task_head;
+    while(t) {
+        lv_draw_task_t * t_next = t->next;
+        if(t->state == LV_DRAW_TASK_STATE_READY) {
+            if(t_prev) t_prev->next = t->next;      /*Remove by it by assigning the next task to the previous*/
+            else layer->draw_task_head = t_next;    /*If it was the head, set the next as head*/
+
+            /*If it was layer drawing free the layer too*/
+            if(t->type == LV_DRAW_TASK_TYPE_LAYER) {
+                lv_draw_img_dsc_t * draw_img_dsc = t->draw_dsc;
+                lv_layer_t * layer_drawn = (lv_layer_t *)draw_img_dsc->src;
+
+                if(layer_drawn->buf) {
+                    uint32_t layer_px_size = lv_color_format_get_size(layer_drawn->color_format);
+                    uint32_t layer_size_byte = lv_area_get_size(&layer_drawn->buf_area) * layer_px_size;
+                    used_memory_for_layers_kb -= layer_size_byte < 1024 ? 1 : layer_size_byte >> 10;
+                    LV_LOG_INFO("Layer memory used: %d kB\n", used_memory_for_layers_kb);
+                    lv_free(layer_drawn->buf);
+                }
+
+                /*Remove the layer from  the display's*/
+                lv_layer_t * l2 = disp->layer_head;
+                while(l2) {
+                    if(l2->next == layer_drawn) {
+                        l2->next = layer_drawn->next;
+                        break;
+                    }
+                    l2 = l2->next;
+                }
+
+                disp->layer_deinit(disp, layer_drawn);
+                lv_free(layer_drawn);
+            }
+            if(t->type == LV_DRAW_TASK_TYPE_LABEL) {
+                lv_draw_label_dsc_t * draw_label_dsc = t->draw_dsc;
+                if(draw_label_dsc->text_local) {
+                    lv_free((void *)draw_label_dsc->text);
+                    draw_label_dsc->text = NULL;
+                }
+            }
+
+            lv_free(t->draw_dsc);
+            lv_free(t);
+        }
+        else {
+            t_prev = t;
+        }
+        t = t_next;
+    }
+
+    bool one_taken = false;
+
+    /*This layer is ready, enable blending its buffer*/
+    if(layer->parent && layer->all_tasks_added && layer->draw_task_head == NULL) {
+        /*Find a draw task with TYPE_LAYER in the layer where the src is this layer*/
+        lv_draw_task_t * t_src = layer->parent->draw_task_head;
+        while(t_src) {
+            if(t_src->type == LV_DRAW_TASK_TYPE_LAYER && t_src->state == LV_DRAW_TASK_STATE_WAITING) {
+                lv_draw_img_dsc_t * draw_dsc = t_src->draw_dsc;
+                if(draw_dsc->src == layer) {
+                    t_src->state = LV_DRAW_TASK_STATE_QUEUED;
+                    lv_draw_dispatch_request();
+                    break;
+                }
+            }
+            t_src = t_src->next;
+        }
+    }
+    /*Assign draw tasks to the draw_units*/
+    else {
+        bool layer_ok = true;
+        if(layer->buf == NULL) {
+            uint32_t px_size = lv_color_format_get_size(layer->color_format);
+            uint32_t layer_size_byte = lv_area_get_size(&layer->buf_area) * px_size;
+            uint32_t kb = layer_size_byte < 1024 ? 1 : layer_size_byte >> 10;
+            if(used_memory_for_layers_kb + kb > LV_LAYER_MAX_MEMORY_USAGE) {
+                layer_ok = false;
+            }
+        }
+
+        if(layer_ok) {
+            /*Find a draw unit which is not busy and can take at least one task*/
+            /*Let all draw units to pick draw tasks*/
+            lv_draw_unit_t * u = disp->draw_unit_head;
+            while(u) {
+                int32_t taken_cnt = u->dispatch(u, layer);
+                if(taken_cnt < 0) {
+                    break;
+                }
+                if(taken_cnt > 0) one_taken = true;
+                u = u->next;
+            }
+        }
+    }
+
+    return one_taken;
+
 }
 
 void lv_draw_dispatch_wait_for_request(void)
@@ -277,6 +290,15 @@ lv_layer_t * lv_draw_layer_create(lv_layer_t * parent_layer, lv_color_format_t c
     new_layer->color_format = color_format;
     new_layer->buf_area = *area;
     new_layer->clip_area = *area;
+
+    if(disp->layer_head) {
+        lv_layer_t * tail = disp->layer_head;
+        while(tail->next) tail = tail->next;
+        tail->next = new_layer;
+    }
+    else {
+        disp->layer_head = new_layer;
+    }
 
     return new_layer;
 }

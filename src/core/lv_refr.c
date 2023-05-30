@@ -93,30 +93,26 @@ void lv_obj_redraw(lv_layer_t * layer, lv_obj_t * obj)
     lv_obj_get_coords(obj, &obj_coords_ext);
     lv_coord_t ext_draw_size = _lv_obj_get_ext_draw_size(obj);
     lv_area_increase(&obj_coords_ext, ext_draw_size, ext_draw_size);
-    bool com_clip_res = _lv_area_intersect(&clip_coords_for_obj, &clip_area_ori, &obj_coords_ext);
+
+    if(!_lv_area_intersect(&clip_coords_for_obj, &clip_area_ori, &obj_coords_ext)) return;
     /*If the object is visible on the current clip area*/
-    bool should_draw = com_clip_res;
-    if(should_draw) {
-        layer->clip_area = clip_coords_for_obj;
+    layer->clip_area = clip_coords_for_obj;
 
-        lv_obj_send_event(obj, LV_EVENT_DRAW_MAIN_BEGIN, layer);
-        lv_obj_send_event(obj, LV_EVENT_DRAW_MAIN, layer);
-        lv_obj_send_event(obj, LV_EVENT_DRAW_MAIN_END, layer);
+    lv_obj_send_event(obj, LV_EVENT_DRAW_MAIN_BEGIN, layer);
+    lv_obj_send_event(obj, LV_EVENT_DRAW_MAIN, layer);
+    lv_obj_send_event(obj, LV_EVENT_DRAW_MAIN_END, layer);
 #if LV_USE_REFR_DEBUG
-        lv_color_t debug_color = lv_color_make(lv_rand(0, 0xFF), lv_rand(0, 0xFF), lv_rand(0, 0xFF));
-        lv_draw_rect_dsc_t draw_dsc;
-        lv_draw_rect_dsc_init(&draw_dsc);
-        draw_dsc.bg_color = debug_color;
-        draw_dsc.bg_opa = LV_OPA_20;
-        draw_dsc.border_width = 1;
-        draw_dsc.border_opa = LV_OPA_30;
-        draw_dsc.border_color = debug_color;
-        lv_draw_rect(layer, &draw_dsc, &obj_coords_ext);
+    lv_color_t debug_color = lv_color_make(lv_rand(0, 0xFF), lv_rand(0, 0xFF), lv_rand(0, 0xFF));
+    lv_draw_rect_dsc_t draw_dsc;
+    lv_draw_rect_dsc_init(&draw_dsc);
+    draw_dsc.bg_color = debug_color;
+    draw_dsc.bg_opa = LV_OPA_20;
+    draw_dsc.border_width = 1;
+    draw_dsc.border_opa = LV_OPA_30;
+    draw_dsc.border_color = debug_color;
+    lv_draw_rect(layer, &draw_dsc, &obj_coords_ext);
 #endif
-    }
 
-    /*With overflow visible keep the previous clip area to let the children visible out of this object too
-     *With not overflow visible limit the clip are to the object's coordinates to clip the children*/
     lv_area_t clip_coords_for_children;
     bool refr_children = true;
     if(!_lv_area_intersect(&clip_coords_for_children, &clip_area_ori, &obj->coords)) {
@@ -124,11 +120,18 @@ void lv_obj_redraw(lv_layer_t * layer, lv_obj_t * obj)
     }
 
     if(refr_children) {
-        layer->clip_area = clip_coords_for_children;
         uint32_t i;
         uint32_t child_cnt = lv_obj_get_child_cnt(obj);
-        if(child_cnt) {
-            lv_layer_t * layer_children = layer;
+        if(child_cnt == 0) {
+            /*If the object was visible on the clip area call the post draw events too*/
+            layer->clip_area = clip_coords_for_obj;
+            /*If all the children are redrawn make 'post draw' draw*/
+            lv_obj_send_event(obj, LV_EVENT_DRAW_POST_BEGIN, layer);
+            lv_obj_send_event(obj, LV_EVENT_DRAW_POST, layer);
+            lv_obj_send_event(obj, LV_EVENT_DRAW_POST_END, layer);
+        }
+        else {
+            layer->clip_area = clip_coords_for_children;
             bool clip_corner = lv_obj_get_style_clip_corner(obj, LV_PART_MAIN);
 
             lv_coord_t radius = 0;
@@ -136,41 +139,101 @@ void lv_obj_redraw(lv_layer_t * layer, lv_obj_t * obj)
                 radius = lv_obj_get_style_radius(obj, LV_PART_MAIN);
                 if(radius == 0) clip_corner = false;
             }
-            if(clip_corner) {
-                layer_children = lv_draw_layer_create(layer, LV_COLOR_FORMAT_ARGB8888, &obj->coords);
+
+            if(clip_corner == false) {
+                for(i = 0; i < child_cnt; i++) {
+                    lv_obj_t * child = obj->spec_attr->children[i];
+                    refr_obj(layer, child);
+
+                }
+
+                /*If the object was visible on the clip area call the post draw events too*/
+                layer->clip_area = clip_coords_for_obj;
+                /*If all the children are redrawn make 'post draw' draw*/
+                lv_obj_send_event(obj, LV_EVENT_DRAW_POST_BEGIN, layer);
+                lv_obj_send_event(obj, LV_EVENT_DRAW_POST, layer);
+                lv_obj_send_event(obj, LV_EVENT_DRAW_POST_END, layer);
             }
-            for(i = 0; i < child_cnt; i++) {
-                lv_obj_t * child = obj->spec_attr->children[i];
-                refr_obj(layer_children, child);
-            }
-            if(clip_corner) {
+            else {
+                lv_layer_t * layer_children;
                 lv_draw_mask_rect_dsc_t mask_draw_dsc;
                 lv_draw_mask_rect_dsc_init(&mask_draw_dsc);
-                mask_draw_dsc.area = layer_children->buf_area;
                 mask_draw_dsc.radius = radius;
-                lv_draw_mask_rect(layer_children, &mask_draw_dsc);
+                mask_draw_dsc.area = obj->coords;
 
                 lv_draw_img_dsc_t img_draw_dsc;
                 lv_draw_img_dsc_init(&img_draw_dsc);
-                img_draw_dsc.src = layer_children;
-                lv_draw_layer(layer, &img_draw_dsc, &layer_children->buf_area);
+
+                int32_t short_side = LV_MIN(lv_area_get_width(&obj->coords), lv_area_get_height(&obj->coords));
+                int32_t rout = LV_MIN(radius, short_side >> 1);
+
+                lv_area_t bottom = obj->coords;
+                bottom.y1 = bottom.y2 - rout + 1;
+                if(_lv_area_intersect(&bottom, &bottom, &clip_area_ori)) {
+                    layer_children = lv_draw_layer_create(layer, LV_COLOR_FORMAT_ARGB8888, &bottom);
+
+                    for(i = 0; i < child_cnt; i++) {
+                        lv_obj_t * child = obj->spec_attr->children[i];
+                        refr_obj(layer_children, child);
+                    }
+
+                    /*If all the children are redrawn make 'post draw' draw*/
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST_BEGIN, layer_children);
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST, layer_children);
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST_END, layer_children);
+
+                    lv_draw_mask_rect(layer_children, &mask_draw_dsc);
+
+                    img_draw_dsc.src = layer_children;
+                    lv_draw_layer(layer, &img_draw_dsc, &layer_children->buf_area);
+                }
+
+                lv_area_t top = obj->coords;
+                top.y2 = top.y1 + rout - 1;
+                if(_lv_area_intersect(&top, &top, &clip_area_ori)) {
+                    layer_children = lv_draw_layer_create(layer, LV_COLOR_FORMAT_ARGB8888, &top);
+
+                    for(i = 0; i < child_cnt; i++) {
+                        lv_obj_t * child = obj->spec_attr->children[i];
+                        refr_obj(layer_children, child);
+                    }
+
+                    /*If all the children are redrawn make 'post draw' draw*/
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST_BEGIN, layer_children);
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST, layer_children);
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST_END, layer_children);
+
+                    lv_draw_mask_rect(layer_children, &mask_draw_dsc);
+
+                    img_draw_dsc.src = layer_children;
+                    lv_draw_layer(layer, &img_draw_dsc, &layer_children->buf_area);
+
+                }
+
+
+                lv_area_t mid = obj->coords;
+                mid.y1 += rout;
+                mid.y2 -= rout;
+                if(_lv_area_intersect(&mid, &mid, &clip_area_ori)) {
+                    layer->clip_area = mid;
+                    for(i = 0; i < child_cnt; i++) {
+                        lv_obj_t * child = obj->spec_attr->children[i];
+                        refr_obj(layer, child);
+                    }
+
+                    /*If all the children are redrawn make 'post draw' draw*/
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST_BEGIN, layer);
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST, layer);
+                    lv_obj_send_event(obj, LV_EVENT_DRAW_POST_END, layer);
+
+                }
+
             }
         }
     }
 
-    /*If the object was visible on the clip area call the post draw events too*/
-    if(should_draw) {
-        layer->clip_area = clip_coords_for_obj;
-
-        /*If all the children are redrawn make 'post draw' draw*/
-        lv_obj_send_event(obj, LV_EVENT_DRAW_POST_BEGIN, layer);
-        lv_obj_send_event(obj, LV_EVENT_DRAW_POST, layer);
-        lv_obj_send_event(obj, LV_EVENT_DRAW_POST_END, layer);
-    }
-
     layer->clip_area = clip_area_ori;
 }
-
 
 /**
  * Invalidate an area on display to redraw it
@@ -521,7 +584,7 @@ static void refr_area_part(lv_layer_t * layer)
     }
     /*If the screen is transparent initialize it when the flushing is ready*/
     if(lv_color_format_has_alpha(disp_refr->color_format)) {
-        if(layer->buffer_clear) layer->buffer_clear(layer);
+        if(layer->buffer_clear) layer->buffer_clear(layer, &disp_refr->refreshed_area);
     }
 
     lv_obj_t * top_act_scr = NULL;

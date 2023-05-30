@@ -111,7 +111,7 @@ void lv_sdl_window_set_zoom(lv_disp_t * disp, uint8_t zoom)
 {
     lv_sdl_window_t * dsc = lv_disp_get_driver_data(disp);
     dsc->zoom = zoom;
-    texture_resize(disp);
+    lv_disp_send_event(disp, LV_EVENT_RESOLUTION_CHANGED, NULL);
     lv_refr_now(disp);
 }
 
@@ -149,7 +149,6 @@ void lv_sdl_window_set_title(lv_disp_t * disp, const char * title)
 
 static void flush_cb(lv_disp_t * disp, const lv_area_t * area, uint8_t * px_map)
 {
-
 #if LV_SDL_PARTIAL_MODE
     int32_t y;
     lv_sdl_window_t * dsc = lv_disp_get_driver_data(disp);
@@ -289,6 +288,7 @@ static void texture_resize(lv_disp_t * disp)
     lv_sdl_window_t * dsc = lv_disp_get_driver_data(disp);
 
     dsc->fb = realloc(dsc->fb, hor_res * ver_res * px_size);
+    memset(dsc->fb, 0x00, hor_res * ver_res * px_size);
 
 #if LV_SDL_PARTIAL_MODE == 0
     lv_disp_set_draw_buffers(disp, dsc->fb, NULL, hor_res * ver_res * px_size, LV_DISP_RENDER_MODE_DIRECT);

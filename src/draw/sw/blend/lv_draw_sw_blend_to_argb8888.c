@@ -6,7 +6,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "../lv_draw_sw.h"
+#include "lv_draw_sw_blend_to_argb8888.h"
 #if LV_USE_DRAW_SW
 
 #include "lv_draw_sw_blend.h"
@@ -136,9 +136,8 @@ LV_ATTRIBUTE_FAST_MEM void lv_draw_sw_blend_color_to_argb8888(_lv_draw_sw_blend_
     }
     /*Masked with full opacity*/
     else if(mask && opa >= LV_OPA_MAX) {
-        lv_color32_t color_argb = lv_color_to_32(dsc->color, opa);
+        lv_color32_t color_argb = lv_color_to_32(dsc->color, 0xff);
         lv_color32_t * dest_buf = dsc->dest_buf;
-
         for(y = 0; y < h; y++) {
             for(x = 0; x < w; x++) {
                 color_argb.alpha = mask[x];
@@ -255,7 +254,6 @@ LV_ATTRIBUTE_FAST_MEM static void rgb565_image_blend(_lv_draw_sw_blend_image_dsc
     }
     else {
         lv_color32_t src_argb;
-        uint8_t src_px3[3];
         for(y = 0; y < h; y++) {
             for(x = 0; x < w; x++) {
                 src_argb.red = (src_buf_c16[x].red * 2106) >> 8;
@@ -361,7 +359,6 @@ LV_ATTRIBUTE_FAST_MEM static void rgb888_image_blend(_lv_draw_sw_blend_image_dsc
     }
     else {
         lv_color32_t src_argb;
-        uint16_t res;
         for(y = 0; y < h; y++) {
             for(dest_x = 0, src_x = 0; dest_x < w; dest_x++, src_x += src_px_size) {
                 src_argb.red = src_buf[src_x + 2];
@@ -466,13 +463,13 @@ LV_ATTRIBUTE_FAST_MEM static inline lv_color32_t lv_color_32_32_mix(lv_color32_t
     if(fg.alpha >= LV_OPA_MAX || bg.alpha <= LV_OPA_MIN) {
         return fg;
     }
-    /*Opaque background: use simple mix*/
-    else if(bg.alpha == 255) {
-        return lv_color_mix32(fg, bg);
-    }
     /*Transparent foreground: use the Background*/
     else if(fg.alpha <= LV_OPA_MIN) {
         return bg;
+    }
+    /*Opaque background: use simple mix*/
+    else if(bg.alpha == 255) {
+        return lv_color_mix32(fg, bg);
     }
     /*Both colors have alpha. Expensive calculation need to be applied*/
     else {
@@ -531,10 +528,6 @@ LV_ATTRIBUTE_FAST_MEM static inline void blend_non_normal_pixel(lv_color32_t * d
     }
     *dest = lv_color_32_32_mix(res, *dest, cache);
 }
-
-
-
-
 
 
 #endif

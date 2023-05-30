@@ -43,7 +43,6 @@
  *   GLOBAL FUNCTIONS
  **********************/
 
-
 void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw_dsc, const lv_area_t * coords)
 {
     lv_layer_t * layer_to_draw = (lv_layer_t *)draw_dsc->src;
@@ -63,6 +62,8 @@ void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw
     lv_draw_img_dsc_t new_draw_dsc;
     lv_memcpy(&new_draw_dsc, draw_dsc, sizeof(lv_draw_img_dsc_t));
     new_draw_dsc.src = &img_dsc;
+
+    layer_to_draw->done = true;
 
     lv_draw_sw_img(draw_unit, &new_draw_dsc, coords);
 

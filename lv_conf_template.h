@@ -852,6 +852,9 @@
 /*Flex layout demo*/
 #define LV_USE_DEMO_FLEX_LAYOUT 0
 
+/*Smart-phone like multi-language demo*/
+#define LV_USE_DEMO_MULTILANG 0
+
 /*--END OF LV_CONF_H--*/
 
 #endif /*LV_CONF_H*/

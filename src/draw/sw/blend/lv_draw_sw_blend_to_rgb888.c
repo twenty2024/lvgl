@@ -6,7 +6,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "../lv_draw_sw.h"
+#include "lv_draw_sw_blend_to_rgb888.h"
 #if LV_USE_DRAW_SW
 
 #include "lv_draw_sw_blend.h"
@@ -298,9 +298,8 @@ LV_ATTRIBUTE_FAST_MEM static void rgb888_image_blend(_lv_draw_sw_blend_image_dsc
         /*Special case*/
         if(mask_buf == NULL && opa >= LV_OPA_MAX) {
             if(src_px_size == dest_px_size) {
-                uint32_t line_in_bytes = w * src_px_size;
                 for(y = 0; y < h; y++) {
-                    lv_memcpy(dest_buf, src_buf, line_in_bytes);
+                    lv_memcpy(dest_buf, src_buf, w);
                     dest_buf += dest_stride;
                     src_buf += src_stride;
                 }
@@ -471,6 +470,8 @@ LV_ATTRIBUTE_FAST_MEM static inline void blend_non_normal_pixel(uint8_t * dest, 
 LV_ATTRIBUTE_FAST_MEM static inline void lv_color_24_24_mix(const uint8_t * src, uint8_t * dest, uint8_t mix)
 {
 
+    if(mix == 0) return;
+
     if(mix >= LV_OPA_MAX) {
         dest[0] = src[0];
         dest[1] = src[1];
@@ -481,6 +482,7 @@ LV_ATTRIBUTE_FAST_MEM static inline void lv_color_24_24_mix(const uint8_t * src,
         dest[0] = (uint32_t)((uint32_t)src[0] * mix + dest[0] * mix_inv) >> 8;
         dest[1] = (uint32_t)((uint32_t)src[1] * mix + dest[1] * mix_inv) >> 8;
         dest[2] = (uint32_t)((uint32_t)src[2] * mix + dest[2] * mix_inv) >> 8;
+        dest[3] = 0xff;
     }
 }
 

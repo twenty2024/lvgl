@@ -83,7 +83,8 @@ void lv_canvas_set_palette(lv_obj_t * canvas, uint8_t id, lv_color32_t c);
  *====================*/
 
 
-void lv_canvas_get_px(lv_obj_t * obj, lv_coord_t x, lv_coord_t y, lv_color_t * color, lv_opa_t * opa);
+lv_color32_t lv_canvas_get_px(lv_obj_t * obj, lv_coord_t x, lv_coord_t y);
+
 /**
  * Get the image of the canvas as a pointer to an `lv_img_dsc_t` variable.
  * @param canvas pointer to a canvas object
@@ -149,70 +150,11 @@ void lv_canvas_blur_ver(lv_obj_t * canvas, const lv_area_t * area, uint16_t r);
  * @param color the background color
  * @param opa the desired opacity
  */
-void lv_canvas_fill_bg(lv_obj_t * canvas, lv_color_t color, lv_opa_t opa);
+void lv_canvas_fill_bg(lv_obj_t * obj, lv_color_t color, lv_opa_t opa);
 
-/**
- * Draw a rectangle on the canvas
- * @param canvas   pointer to a canvas object
- * @param x        left coordinate of the rectangle
- * @param y        top coordinate of the rectangle
- * @param w        width of the rectangle
- * @param h        height of the rectangle
- * @param draw_dsc descriptor of the rectangle
- */
-void lv_canvas_draw_rect(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord_t w, lv_coord_t h,
-                         const lv_draw_rect_dsc_t * draw_dsc);
+void lv_canvas_init_layer(lv_obj_t * canvas, lv_layer_t * layer);
 
-/**
- * Draw a text on the canvas.
- * @param canvas   pointer to a canvas object
- * @param x        left coordinate of the text
- * @param y        top coordinate of the text
- * @param max_w    max width of the text. The text will be wrapped to fit into this size
- * @param draw_dsc pointer to a valid label descriptor `lv_draw_label_dsc_t`
- */
-void lv_canvas_draw_text(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y, lv_coord_t max_w,
-                         lv_draw_label_dsc_t * draw_dsc);
-
-/**
- * Draw an image on the canvas
- * @param canvas   pointer to a canvas object
- * @param x        left coordinate of the image
- * @param y        top coordinate of the image
- * @param draw_dsc pointer to a valid label descriptor `lv_draw_img_dsc_t`
- */
-void lv_canvas_draw_img(lv_obj_t * canvas, lv_coord_t x, lv_coord_t y,
-                        const lv_draw_img_dsc_t * draw_dsc);
-
-/**
- * Draw a line on the canvas
- * @param canvas     pointer to a canvas object
- * @param points     point of the line
- * @param point_cnt  number of points
- * @param draw_dsc   pointer to an initialized `lv_draw_line_dsc_t` variable
- */
-void lv_canvas_draw_line(lv_obj_t * canvas, const lv_draw_line_dsc_t * draw_dsc);
-
-/**
- * Draw a polygon on the canvas
- * @param canvas    pointer to a canvas object
- * @param points    point of the polygon
- * @param point_cnt number of points
- * @param draw_dsc  pointer to an initialized `lv_draw_rect_dsc_t` variable
- */
-void lv_canvas_draw_triangle(lv_obj_t * canvas, const lv_draw_triangle_dsc_t * draw_dsc);
-
-/**
- * Draw an arc on the canvas
- * @param canvas pointer to a canvas object
- * @param x      origo x  of the arc
- * @param y      origo y of the arc
- * @param r      radius of the arc
- * @param start_angle start angle in degrees
- * @param end_angle   end angle in degrees
- * @param draw_dsc    pointer to an initialized `lv_draw_line_dsc_t` variable
- */
-void lv_canvas_draw_arc(lv_obj_t * canvas, const lv_draw_arc_dsc_t * draw_dsc);
+void lv_canvas_finish_layer(lv_obj_t * canvas, lv_layer_t * layer);
 
 /**********************
  *      MACROS

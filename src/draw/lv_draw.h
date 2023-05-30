@@ -30,6 +30,7 @@ extern "C" {
  **********************/
 
 struct _lv_draw_img_dsc_t;
+struct _lv_disp_t;
 
 typedef enum {
     LV_DRAW_TASK_TYPE_RECTANGLE,
@@ -143,7 +144,7 @@ typedef struct _lv_layer_t  {
      */
     void (*buffer_convert)(struct _lv_layer_t * layer);
 
-    void (*buffer_clear)(struct _lv_layer_t * target_layer);
+    void (*buffer_clear)(struct _lv_layer_t * target_layer, const lv_area_t * a);
 
     /**
      * Linked list of draw tasks
@@ -153,7 +154,7 @@ typedef struct _lv_layer_t  {
     struct _lv_layer_t * parent;
     struct _lv_layer_t * next;
     bool all_tasks_added;
-
+    bool done;
     void * user_data;
 } lv_layer_t;
 
@@ -178,6 +179,8 @@ lv_draw_task_t * lv_draw_add_task(lv_layer_t * layer, const lv_area_t * coords);
 void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t);
 
 void lv_draw_dispatch(void);
+
+bool lv_draw_dispatch_layer(struct _lv_disp_t * disp, lv_layer_t * layer);
 
 /**
  * Wait for a new dispatch request.

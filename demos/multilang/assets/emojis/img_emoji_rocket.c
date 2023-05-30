@@ -12,6 +12,7 @@
     #include "lvgl/lvgl.h"
 #endif
 
+#if LV_USE_DEMO_MULTILANG
 
 #ifndef LV_ATTRIBUTE_MEM_ALIGN
     #define LV_ATTRIBUTE_MEM_ALIGN
@@ -121,3 +122,5 @@ const lv_img_dsc_t img_emoji_rocket = {
     //  .data_size = 304 * LV_IMG_PX_SIZE_ALPHA_BYTE,
     .data = img_emoji_rocket_map,
 };
+
+#endif

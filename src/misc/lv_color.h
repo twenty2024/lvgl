@@ -164,7 +164,7 @@ static inline uint32_t lv_color_to_int(lv_color_t c)
 }
 
 
-static inline lv_color_t lv_color_from_int(uint16_t v)
+static inline lv_color_t lv_color_from_int(uint32_t v)
 {
     return *((lv_color_t *)((uint8_t *)&v));
 }

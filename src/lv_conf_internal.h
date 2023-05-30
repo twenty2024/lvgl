@@ -2800,6 +2800,15 @@
     #endif
 #endif
 
+/*Smart-phone like multi-language demo*/
+#ifndef LV_USE_DEMO_MULTILANG
+    #ifdef CONFIG_LV_USE_DEMO_MULTILANG
+        #define LV_USE_DEMO_MULTILANG CONFIG_LV_USE_DEMO_MULTILANG
+    #else
+        #define LV_USE_DEMO_MULTILANG 0
+    #endif
+#endif
+
 
 
 /*----------------------------------

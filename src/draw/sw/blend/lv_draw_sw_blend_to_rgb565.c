@@ -6,7 +6,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "../lv_draw_sw.h"
+#include "lv_draw_sw_blend_to_rgb565.h"
 #if LV_USE_DRAW_SW
 
 #include "lv_draw_sw_blend.h"

@@ -18,6 +18,9 @@ void lv_example_canvas_5(void)
     lv_canvas_fill_bg(canvas, lv_color_hex3(0xccc), LV_OPA_COVER);
     lv_obj_center(canvas);
 
+    lv_layer_t layer;
+    lv_canvas_init_layer(canvas, &layer);
+
     lv_draw_arc_dsc_t dsc;
     lv_draw_arc_dsc_init(&dsc);
     dsc.color = lv_palette_main(LV_PALETTE_RED);
@@ -28,6 +31,9 @@ void lv_example_canvas_5(void)
     dsc.start_angle = 0;
     dsc.end_angle = 220;
 
-    lv_canvas_draw_arc(canvas, &dsc);
+    lv_draw_arc(&layer, &dsc);
+
+    lv_canvas_finish_layer(canvas, &layer);
+
 }
 #endif

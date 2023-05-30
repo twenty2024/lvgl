@@ -43,7 +43,7 @@
 void lv_draw_sw_mask_rect(lv_draw_unit_t * draw_unit, const lv_draw_mask_rect_dsc_t * dsc, const lv_area_t * coords)
 {
     LV_UNUSED(coords);
-
+    return;
     lv_area_t draw_area;
     if(!_lv_area_intersect(&draw_area, &dsc->area, draw_unit->clip_area)) {
         return;

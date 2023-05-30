@@ -1337,7 +1337,7 @@ static void chart_event_cb(lv_event_t * e)
             /*Set the markers' text*/
             if(base_dsc->id1 == LV_CHART_AXIS_PRIMARY_X) {
                 lv_draw_label_dsc_t * label_draw_dsc = draw_task->draw_dsc;
-                if(label_draw_dsc->text_local) lv_free(label_draw_dsc->text);
+                if(label_draw_dsc->text_local) lv_free((void *)label_draw_dsc->text);
                 const char * txt;
                 if(lv_chart_get_type(obj) == LV_CHART_TYPE_BAR) {
                     const char * month[] = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"};
@@ -1351,7 +1351,7 @@ static void chart_event_cb(lv_event_t * e)
                 label_draw_dsc->align = LV_TEXT_ALIGN_CENTER;
                 label_draw_dsc->text_local = 1;
                 label_draw_dsc->text = lv_malloc(strlen(txt) + 1);
-                strcpy(label_draw_dsc->text, txt);
+                strcpy((char *)label_draw_dsc->text, txt);
                 draw_task->area.x1 -= 30;
                 draw_task->area.x2 += 30;
 
@@ -1409,12 +1409,6 @@ static void chart_event_cb(lv_event_t * e)
         }
 
 
-        static uint32_t cnt = 0;
-
-        if(cnt == 35) {
-            printf("%d\n", cnt);
-        }
-        cnt++;
         bool add_value = false;
         if(base_dsc->part == LV_PART_INDICATOR && lv_chart_get_pressed_point(obj) == base_dsc->id2) {
             lv_draw_rect_dsc_t * rect_dsc = draw_task->draw_dsc;
@@ -1494,6 +1488,7 @@ static void chart_event_cb(lv_event_t * e)
 
 static void shop_chart_event_cb(lv_event_t * e)
 {
+    LV_UNUSED(e);
     //    lv_event_code_t code = lv_event_get_code(e);
     //    if(code == LV_EVENT_DRAW_PART_BEGIN) {
     //        lv_obj_draw_part_dsc_t * dsc = lv_event_get_param(e);

@@ -12,6 +12,7 @@
     #include "lvgl/lvgl.h"
 #endif
 
+#if LV_USE_DEMO_MULTILANG
 
 #ifndef LV_ATTRIBUTE_MEM_ALIGN
     #define LV_ATTRIBUTE_MEM_ALIGN
@@ -112,3 +113,5 @@ const lv_img_dsc_t img_multilang_like = {
     .header.h = 17,
     .data = img_multilang_like_map,
 };
+
+#endif

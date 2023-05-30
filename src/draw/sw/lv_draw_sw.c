@@ -38,7 +38,7 @@ static void lv_draw_sw_buffer_copy(lv_layer_t * layer,
 
 static void lv_draw_sw_buffer_convert(lv_layer_t * layer);
 
-static void lv_draw_sw_buffer_clear(lv_layer_t * layer);
+static void lv_draw_sw_buffer_clear(lv_layer_t * layer, const lv_area_t * a);
 
 /**********************
  *  GLOBAL PROTOTYPES
@@ -65,15 +65,6 @@ lv_layer_t * lv_draw_sw_layer_init(lv_disp_t * disp)
     layer->buffer_copy = lv_draw_sw_buffer_copy;
     layer->buffer_convert = lv_draw_sw_buffer_convert;
     layer->buffer_clear = lv_draw_sw_buffer_clear;
-
-    if(disp->layer_head) {
-        lv_layer_t * tail = disp->layer_head;
-        while(tail->next) tail = tail->next;
-        tail->next = layer;
-    }
-    else {
-        disp->layer_head = layer;
-    }
 
     return layer;
 }
@@ -115,17 +106,17 @@ static int32_t lv_draw_sw_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * laye
     if(draw_sw_unit->task_act) return 0;
 
     /*Try to get a ready to draw layer*/
-    lv_draw_task_t * t;
-    t = layer->draw_task_head;
-    while(t) {
-        if(t->type == LV_DRAW_TASK_TYPE_LAYER && t->state == LV_DRAW_TASK_STATE_READY) {
-            LV_LOG_INFO("prioritizing layer draw");
-            break;
-        }
-        t = t->next;
-    }
+    //    t = layer->draw_task_head;
+    //    while(t) {
+    //        if(t->type == LV_DRAW_TASK_TYPE_LAYER && t->state == LV_DRAW_TASK_STATE_QUEUED) {
+    //            LV_LOG_INFO("prioritizing layer draw");
+    //            break;
+    //        }
+    //        t = t->next;
+    //    }
 
-    if(t == NULL) t = lv_draw_get_next_available_task(layer, NULL);
+    lv_draw_task_t * t = NULL;
+    t = lv_draw_get_next_available_task(layer, NULL);
     if(t == NULL) return -1;
 
     /*If the buffer of the layer is not allocated yet, allocate it now*/
@@ -144,7 +135,7 @@ static int32_t lv_draw_sw_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * laye
         layer->buf = buf;
 
         if(lv_color_format_has_alpha(layer->color_format)) {
-            layer->buffer_clear(layer);
+            layer->buffer_clear(layer, &layer->buf_area);
         }
     }
 
@@ -278,11 +269,22 @@ static void lv_draw_sw_buffer_convert(lv_layer_t * layer)
 
 uint8_t * buf_tmp;
 
-static void lv_draw_sw_buffer_clear(lv_layer_t * layer)
+static void lv_draw_sw_buffer_clear(lv_layer_t * layer, const lv_area_t * a)
 {
     uint8_t px_size = lv_color_format_get_size(layer->color_format);
-    lv_memset(layer->buf, 0x00, lv_area_get_size(&layer->buf_area) * px_size);
-    buf_tmp = layer->buf;
+    uint8_t * buf =  layer->buf;
+    uint32_t dest_stride = lv_area_get_width(&layer->buf_area) * px_size;
+
+    /*Go to the first pixel of each buffer*/
+    buf += dest_stride * (a->y1 - layer->buf_area.y1);
+    buf += (a->x1 - layer->buf_area.x1) * px_size;
+
+    uint32_t line_length = lv_area_get_width(a) * px_size;
+    lv_coord_t y;
+    for(y = a->y1; y <= a->y2; y++) {
+        lv_memzero(buf, line_length);
+        buf += dest_stride;
+    }
 }
 
 #if LV_USE_OS

@@ -95,13 +95,23 @@ static lv_res_t decoder_info(lv_img_decoder_t * decoder, const void * src, lv_im
             header->h = h;
             header->always_zero = 0;
             lv_fs_close(&f);
-#if LV_COLOR_DEPTH == 32
+
             uint16_t bpp;
             memcpy(&bpp, headers + 28, 2);
-            header->cf = bpp == 32 ? LV_COLOR_FORMAT_NATIVE_ALPHA : LV_COLOR_FORMAT_NATIVE;
-#else
-            header->cf = LV_COLOR_FORMAT_NATIVE;
-#endif
+            switch(bpp) {
+            case 16:
+                header->cf = LV_COLOR_FORMAT_RGB565;
+                break;
+            case 24:
+                header->cf = LV_COLOR_FORMAT_RGB888;
+                break;
+            case 32:
+                header->cf = LV_COLOR_FORMAT_ARGB8888;
+                break;
+            default:
+                LV_LOG_WARN("Not supported bpp: %d", bpp);
+                return LV_RES_OK;
+            }
             return LV_RES_OK;
         }
     }
@@ -202,36 +212,6 @@ static lv_res_t decoder_read_line(lv_img_decoder_t * decoder, lv_img_decoder_dsc
     p += x * (b->bpp / 8);
     lv_fs_seek(&b->f, p, LV_FS_SEEK_SET);
     lv_fs_read(&b->f, buf, len * (b->bpp / 8), NULL);
-
-
-#if LV_COLOR_DEPTH == 32
-    if(b->bpp == 32) {
-        lv_coord_t i;
-        for(i = 0; i < len; i++) {
-            uint8_t b0 = buf[i * 4];
-            uint8_t b1 = buf[i * 4 + 1];
-            uint8_t b2 = buf[i * 4 + 2];
-            uint8_t b3 = buf[i * 4 + 3];
-            lv_color32_t * c = (lv_color32_t *)&buf[i * 4];
-            c->red = b2;
-            c->green = b1;
-            c->blue = b0;
-            c->alpha = b3;
-        }
-    }
-    if(b->bpp == 24) {
-        lv_coord_t i;
-
-        for(i = len - 1; i >= 0; i--) {
-            uint8_t * t = &buf[i * 3];
-            lv_color32_t * c = (lv_color32_t *)&buf[i * 4];
-            c->red = t[2];
-            c->green = t[1];
-            c->blue = t[0];
-            c->alpha = 0xff;
-        }
-    }
-#endif
 
     return LV_RES_OK;
 }
