@@ -99,18 +99,18 @@ static lv_res_t decoder_info(lv_img_decoder_t * decoder, const void * src, lv_im
             uint16_t bpp;
             memcpy(&bpp, headers + 28, 2);
             switch(bpp) {
-            case 16:
-                header->cf = LV_COLOR_FORMAT_RGB565;
-                break;
-            case 24:
-                header->cf = LV_COLOR_FORMAT_RGB888;
-                break;
-            case 32:
-                header->cf = LV_COLOR_FORMAT_ARGB8888;
-                break;
-            default:
-                LV_LOG_WARN("Not supported bpp: %d", bpp);
-                return LV_RES_OK;
+                case 16:
+                    header->cf = LV_COLOR_FORMAT_RGB565;
+                    break;
+                case 24:
+                    header->cf = LV_COLOR_FORMAT_RGB888;
+                    break;
+                case 32:
+                    header->cf = LV_COLOR_FORMAT_ARGB8888;
+                    break;
+                default:
+                    LV_LOG_WARN("Not supported bpp: %d", bpp);
+                    return LV_RES_OK;
             }
             return LV_RES_OK;
         }
