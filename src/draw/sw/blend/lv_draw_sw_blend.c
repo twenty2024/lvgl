@@ -71,9 +71,6 @@ void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv_draw_sw_blend_dsc_t *
             fill_dsc.mask_buf += fill_dsc.mask_stride * (blend_area.y1 - blend_dsc->mask_area->y1) +
                                  (blend_area.x1 - blend_dsc->mask_area->x1);
         }
-        else {
-            fill_dsc.mask_buf = NULL;
-        }
 
         switch(layer->color_format) {
             case LV_COLOR_FORMAT_RGB565:
@@ -108,14 +105,16 @@ void lv_draw_sw_blend(lv_draw_unit_t * draw_unit, const lv_draw_sw_blend_dsc_t *
         src_buf += (blend_area.x1 - blend_dsc->blend_area->x1) * src_px_size;
         image_dsc.src_buf = src_buf;
 
-        if(blend_dsc->mask_buf) {
+
+        if(blend_dsc->mask_buf == NULL) image_dsc.mask_buf = NULL;
+        else if(blend_dsc->mask_res == LV_DRAW_SW_MASK_RES_FULL_COVER) image_dsc.mask_buf = NULL;
+        else image_dsc.mask_buf = blend_dsc->mask_buf;
+
+        if(image_dsc.mask_buf) {
             image_dsc.mask_buf = blend_dsc->mask_buf;
             image_dsc.mask_stride = lv_area_get_width(blend_dsc->mask_area);
             image_dsc.mask_buf += image_dsc.mask_stride * (blend_area.y1 - blend_dsc->mask_area->y1) +
                                   (blend_area.x1 - blend_dsc->mask_area->x1);
-        }
-        else {
-            image_dsc.mask_buf = NULL;
         }
 
         uint32_t px_size = lv_color_format_get_size(layer->color_format);

@@ -482,11 +482,8 @@ LV_ATTRIBUTE_FAST_MEM static inline void lv_color_24_24_mix(const uint8_t * src,
         dest[0] = (uint32_t)((uint32_t)src[0] * mix + dest[0] * mix_inv) >> 8;
         dest[1] = (uint32_t)((uint32_t)src[1] * mix + dest[1] * mix_inv) >> 8;
         dest[2] = (uint32_t)((uint32_t)src[2] * mix + dest[2] * mix_inv) >> 8;
-        dest[3] = 0xff;
     }
 }
-
-
 
 
 #endif

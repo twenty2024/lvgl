@@ -154,7 +154,6 @@ typedef struct _lv_layer_t  {
     struct _lv_layer_t * parent;
     struct _lv_layer_t * next;
     bool all_tasks_added;
-    bool done;
     void * user_data;
 } lv_layer_t;
 

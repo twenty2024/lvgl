@@ -63,8 +63,6 @@ void lv_draw_sw_layer(lv_draw_unit_t * draw_unit, const lv_draw_img_dsc_t * draw
     lv_memcpy(&new_draw_dsc, draw_dsc, sizeof(lv_draw_img_dsc_t));
     new_draw_dsc.src = &img_dsc;
 
-    layer_to_draw->done = true;
-
     lv_draw_sw_img(draw_unit, &new_draw_dsc, coords);
 
 #if LV_USE_LAYER_DEBUG || LV_USE_PARALLEL_DRAW_DEBUG

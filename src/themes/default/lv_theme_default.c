@@ -595,7 +595,8 @@ static void style_init(void)
 
     style_init_reset(&styles->msgbox_backdrop_bg);
     lv_style_set_bg_color(&styles->msgbox_backdrop_bg, lv_palette_main(LV_PALETTE_GREY));
-    lv_style_set_bg_opa(&styles->msgbox_backdrop_bg, LV_OPA_50);
+    lv_style_set_bg_opa(&styles->msgbox_backdrop_bg, LV_OPA_100);
+    lv_style_set_opa(&styles->msgbox_backdrop_bg, LV_OPA_50);
 #endif
 #if LV_USE_KEYBOARD
     style_init_reset(&styles->keyboard_btn_bg);

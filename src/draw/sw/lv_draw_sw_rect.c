@@ -162,8 +162,10 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
 
     /*Get gradient if appropriate*/
     lv_grad_t * grad = lv_gradient_get(&dsc->bg_grad, coords_bg_w, coords_bg_h);
+    lv_opa_t * grad_opa_map = NULL;
     if(grad && grad_dir == LV_GRAD_DIR_HOR) {
         blend_dsc.src_buf = grad->color_map + clipped_coords.x1 - bg_coords.x1;
+        grad_opa_map = grad->opa_map + clipped_coords.x1 - bg_coords.x1;
         blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB888;
     }
 
@@ -234,6 +236,14 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
                 blend_dsc.color = grad->color_map[top_y - bg_coords.y1];
                 blend_dsc.opa = grad->opa_map[top_y - bg_coords.y1];
             }
+            else if(grad_dir == LV_GRAD_DIR_HOR) {
+                lv_coord_t i;
+                for(i = 0; i < clipped_w; i++) {
+                    if(grad_opa_map[i] < LV_OPA_MAX) mask_buf[i] = (mask_buf[i] * grad_opa_map[i]) >> 8;
+                }
+
+                blend_dsc.mask_res = LV_DRAW_SW_MASK_RES_CHANGED;
+            }
             lv_draw_sw_blend(draw_unit, &blend_dsc);
         }
 
@@ -244,7 +254,10 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
 #if _DITHER_GRADIENT
             if(dither_func) dither_func(grad, blend_area.x1,  bottom_y - bg_coords.y1, grad_size);
 #endif
-            if(grad_dir == LV_GRAD_DIR_VER) blend_dsc.color = grad->color_map[bottom_y - bg_coords.y1];
+            if(grad_dir == LV_GRAD_DIR_VER) {
+                blend_dsc.color = grad->color_map[bottom_y - bg_coords.y1];
+                blend_dsc.opa = grad->opa_map[bottom_y - bg_coords.y1];
+            }
             lv_draw_sw_blend(draw_unit, &blend_dsc);
         }
     }
@@ -262,7 +275,14 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
     /*With gradient draw line by line*/
     else {
         blend_dsc.opa = opa;
-        blend_dsc.mask_res = LV_DRAW_SW_MASK_RES_FULL_COVER;
+        if(grad_dir == LV_GRAD_DIR_VER) {
+            blend_dsc.mask_res = LV_DRAW_SW_MASK_RES_FULL_COVER;
+        }
+        else if(grad_dir == LV_GRAD_DIR_HOR) {
+            blend_dsc.mask_res = LV_DRAW_SW_MASK_RES_CHANGED;
+            blend_dsc.mask_buf = grad_opa_map;
+        }
+
         int32_t h_end = bg_coords.y2 - rout;
         for(h = bg_coords.y1 + rout; h <= h_end; h++) {
             blend_area.y1 = h;
@@ -273,7 +293,8 @@ static void draw_bg(lv_draw_unit_t * draw_unit, const lv_draw_rect_dsc_t * dsc, 
 #endif
             if(grad_dir == LV_GRAD_DIR_VER) {
                 blend_dsc.color = grad->color_map[h - bg_coords.y1];
-                blend_dsc.opa = grad->opa_map[h - bg_coords.y1];
+                if(opa >= LV_OPA_MAX) blend_dsc.opa = grad->opa_map[h - bg_coords.y1];
+                else blend_dsc.opa = (grad->opa_map[h - bg_coords.y1] * opa) >> 8;
             }
             lv_draw_sw_blend(draw_unit, &blend_dsc);
         }
@@ -1153,7 +1174,7 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
     blend_dsc.color = color;
     blend_dsc.opa = opa;
 
-    /*Calculate the x and y coordinates where the straight parts area*/
+    /*Calculate the x and y coordinates where the straight parts area is*/
     lv_area_t core_area;
     core_area.x1 = LV_MAX(outer_area->x1 + rout, inner_area->x1);
     core_area.x2 = LV_MIN(outer_area->x2 - rout, inner_area->x2);
@@ -1174,6 +1195,7 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
         split_hor = false;
     }
 
+
     blend_dsc.mask_res = LV_DRAW_SW_MASK_RES_FULL_COVER;
     /*Draw the straight lines first if they are long enough*/
     if(top_side && split_hor) {
@@ -1192,20 +1214,30 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
         lv_draw_sw_blend(draw_unit, &blend_dsc);
     }
 
-    if(left_side) {
+    /*If the border is very thick and the vertical sides overlap horizontally draw a single rectangle*/
+    if(inner_area->x1 >= inner_area->x2 && left_side && right_side) {
         blend_area.x1 = outer_area->x1;
-        blend_area.x2 = inner_area->x1 - 1;
-        blend_area.y1 = core_area.y1;
-        blend_area.y2 = core_area.y2;
-        lv_draw_sw_blend(draw_unit, &blend_dsc);
-    }
-
-    if(right_side) {
-        blend_area.x1 = inner_area->x2 + 1;
         blend_area.x2 = outer_area->x2;
         blend_area.y1 = core_area.y1;
         blend_area.y2 = core_area.y2;
         lv_draw_sw_blend(draw_unit, &blend_dsc);
+    }
+    else {
+        if(left_side) {
+            blend_area.x1 = outer_area->x1;
+            blend_area.x2 = inner_area->x1 - 1;
+            blend_area.y1 = core_area.y1;
+            blend_area.y2 = core_area.y2;
+            lv_draw_sw_blend(draw_unit, &blend_dsc);
+        }
+
+        if(right_side) {
+            blend_area.x1 = inner_area->x2 + 1;
+            blend_area.x2 = outer_area->x2;
+            blend_area.y1 = core_area.y1;
+            blend_area.y2 = core_area.y2;
+            lv_draw_sw_blend(draw_unit, &blend_dsc);
+        }
     }
 
     /*Draw the corners*/
@@ -1268,7 +1300,9 @@ void draw_border_generic(lv_draw_unit_t * draw_unit, const lv_area_t * outer_are
         }
 
         /*Right corners*/
+        blend_area.x1 = LV_MAX(draw_area.x1, blend_area.x2 + 1);    /*To not overlap with the left side*/
         blend_area.x1 = LV_MAX(draw_area.x1, core_area.x2 + 1);
+
         blend_area.x2 = draw_area.x2;
         blend_w = lv_area_get_width(&blend_area);
 
